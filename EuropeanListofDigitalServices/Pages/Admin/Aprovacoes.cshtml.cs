@@ -38,6 +38,11 @@ public class AprovacoesModel(ApplicationDbContext db, IHubContext<NotificacoesHu
         // Notificar todos os clientes via SignalR que um novo serviço foi aprovado
         await hubContext.Clients.All.SendAsync("NovoServicoAprovado", servico.Nome);
 
+        // Atualizar o contador de aprovações pendentes nos administradores
+        var totalPendentes = await db.ServicosDigitais.CountAsync(s => !s.Aprovado);
+        await hubContext.Clients.Group(NotificacoesHub.GrupoAdministradores)
+            .SendAsync("AprovacoesAtualizadas", totalPendentes);
+
         TempData["Sucesso"] = $"Serviço '{servico.Nome}' aprovado e publicado com sucesso!";
         return RedirectToPage();
     }

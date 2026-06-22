@@ -1,16 +1,18 @@
 using EuropeanListofDigitalServices.Data;
+using EuropeanListofDigitalServices.Hubs;
 using EuropeanListofDigitalServices.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 
 namespace EuropeanListofDigitalServices.Pages.Servicos;
 
 [Authorize]
-public class CreateModel(ApplicationDbContext db) : PageModel
+public class CreateModel(ApplicationDbContext db, IHubContext<NotificacoesHub> hubContext) : PageModel
 {
     [BindProperty]
     public ServicoDigital Servico { get; set; } = new();
@@ -47,6 +49,12 @@ public class CreateModel(ApplicationDbContext db) : PageModel
 
         db.ServicosDigitais.Add(Servico);
         await db.SaveChangesAsync();
+
+        // Notificar os administradores (em tempo real) de que existe uma nova
+        // submissão pendente, enviando também o total atual de pendentes.
+        var totalPendentes = await db.ServicosDigitais.CountAsync(s => !s.Aprovado);
+        await hubContext.Clients.Group(NotificacoesHub.GrupoAdministradores)
+            .SendAsync("AprovacaoPendente", Servico.Nome, totalPendentes);
 
         TempData["Sucesso"] = "Serviço submetido com sucesso! Será publicado após aprovação pelo administrador.";
         return RedirectToPage("Index");
