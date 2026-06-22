@@ -1,0 +1,40 @@
+@page "{id:int}"
+@model EuropeanListofDigitalServices.Pages.Categorias.DeleteModel
+@{
+    ViewData["Title"] = "Eliminar Categoria";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <h1 class="mb-4"><i class="bi bi-trash text-danger me-2"></i>Eliminar Categoria</h1>
+        <div class="card border-danger shadow-sm">
+            <div class="card-header bg-danger text-white">
+                <i class="bi bi-exclamation-triangle me-2"></i>Confirmar Eliminação
+            </div>
+            <div class="card-body">
+                @if (Model.TemServicos)
+                {
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        Não é possível eliminar a categoria <strong>@Model.Categoria?.Nome</strong> porque tem
+                        <strong>@Model.TotalServicos serviço(s)</strong> associado(s).
+                        <br/>Elimine ou mova os serviços primeiro.
+                    </div>
+                    <a asp-page="Index" class="btn btn-secondary">Voltar</a>
+                }
+                else
+                {
+                    <p>Tem a certeza que pretende eliminar a categoria <strong>@Model.Categoria?.Nome</strong>?</p>
+                    <form method="post">
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-danger">
+                                <i class="bi bi-trash me-1"></i>Confirmar Eliminação
+                            </button>
+                            <a asp-page="Index" class="btn btn-outline-secondary">Cancelar</a>
+                        </div>
+                    </form>
+                }
+            </div>
+        </div>
+    </div>
+</div>
