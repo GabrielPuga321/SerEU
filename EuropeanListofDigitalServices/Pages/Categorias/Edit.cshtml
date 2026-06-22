@@ -1,0 +1,43 @@
+@page "{id:int}"
+@model EuropeanListofDigitalServices.Pages.Categorias.EditModel
+@{
+    ViewData["Title"] = "Editar Categoria";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <h1 class="mb-4"><i class="bi bi-pencil me-2 text-warning"></i>Editar Categoria</h1>
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-4">
+                <form method="post">
+                    <input type="hidden" asp-for="Categoria.Id"/>
+                    <div class="mb-3">
+                        <label asp-for="Categoria.Nome" class="form-label fw-bold"></label>
+                        <input asp-for="Categoria.Nome" class="form-control"/>
+                        <span asp-validation-for="Categoria.Nome" class="text-danger small"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="Categoria.Descricao" class="form-label fw-bold"></label>
+                        <textarea asp-for="Categoria.Descricao" class="form-control" rows="3"></textarea>
+                        <span asp-validation-for="Categoria.Descricao" class="text-danger small"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="Categoria.Icone" class="form-label fw-bold"></label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi @Model.Categoria.Icone" id="icone-preview"></i></span>
+                            <input asp-for="Categoria.Icone" class="form-control" id="icone-input"/>
+                        </div>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-warning">
+                            <i class="bi bi-save me-1"></i>Guardar
+                        </button>
+                        <a asp-page="Index" class="btn btn-outline-secondary">Cancelar</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts { <partial name="_ValidationScriptsPartial"/> }

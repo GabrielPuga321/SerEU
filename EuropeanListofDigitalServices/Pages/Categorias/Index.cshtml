@@ -1,0 +1,55 @@
+@page
+@model EuropeanListofDigitalServices.Pages.Categorias.IndexModel
+@{
+    ViewData["Title"] = "Categorias";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="bi bi-grid me-2 text-primary"></i>Categorias</h1>
+    @if (User.IsInRole("Admin"))
+    {
+        <a asp-page="Create" class="btn btn-primary"><i class="bi bi-plus-circle me-1"></i>Nova Categoria</a>
+    }
+</div>
+
+<div class="row g-3">
+    @foreach (var cat in Model.Categorias)
+    {
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-body">
+                    <div class="d-flex align-items-center gap-3 mb-2">
+                        <div class="bg-primary text-white rounded d-flex align-items-center justify-content-center"
+                             style="width:48px;height:48px;font-size:1.5rem">
+                            <i class="bi @(cat.Icone ?? "bi-app")"></i>
+                        </div>
+                        <div>
+                            <h5 class="mb-0">@cat.Nome</h5>
+                            <small class="text-muted">@cat.Servicos.Count(s => s.Aprovado) serviço(s)</small>
+                        </div>
+                    </div>
+                    @if (!string.IsNullOrEmpty(cat.Descricao))
+                    {
+                        <p class="card-text text-muted small">@cat.Descricao</p>
+                    }
+                </div>
+                <div class="card-footer bg-transparent border-0 d-flex justify-content-between">
+                    <a asp-page="/Servicos/Index" asp-route-categoriaId="@cat.Id" class="btn btn-outline-primary btn-sm">
+                        Ver Serviços
+                    </a>
+                    @if (User.IsInRole("Admin"))
+                    {
+                        <div class="d-flex gap-1">
+                            <a asp-page="Edit" asp-route-id="@cat.Id" class="btn btn-outline-secondary btn-sm">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <a asp-page="Delete" asp-route-id="@cat.Id" class="btn btn-outline-danger btn-sm">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+</div>
