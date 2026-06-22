@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>@ViewData["Title"] - Serviços Digitais Europeus</title>
+    <script>
+        // Aplica o tema (claro/escuro) o mais cedo possível para evitar "flash" visual.
+        (function () {
+            try {
+                var guardado = localStorage.getItem('tema');
+                var preferido = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+                document.documentElement.setAttribute('data-bs-theme', guardado || preferido);
+            } catch (e) {
+                document.documentElement.setAttribute('data-bs-theme', 'light');
+            }
+        })();
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"/>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"/>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true"/>
+    <link rel="stylesheet" href="~/EuropeanListofDigitalServices.styles.css" asp-append-version="true"/>
+</head>
+<body>
+<header>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
+        <div class="container">
+            <a class="navbar-brand fw-bold" asp-page="/Index">
+                <i class="bi bi-globe-europe-africa me-2"></i>Serviços Digitais EU
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain"
+                    aria-controls="navbarMain" aria-expanded="false" aria-label="Alternar navegação">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarMain">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link" asp-page="/Servicos/Index">
+                            <i class="bi bi-search me-1"></i>Serviços
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-page="/Categorias/Index">
+                            <i class="bi bi-grid me-1"></i>Categorias
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-page="/Tags/Index">
+                            <i class="bi bi-tags me-1"></i>Tags
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-page="/Sobre">
+                            <i class="bi bi-info-circle me-1"></i>Sobre
+                        </a>
+                    </li>
+                    @if (User.IsInRole("Admin"))
+                    {
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                                <i class="bi bi-gear me-1"></i>Administração
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" asp-page="/Admin/Index">Painel</a></li>
+                                <li><a class="dropdown-item" asp-page="/Admin/Aprovacoes">Aprovações Pendentes</a></li>
+                                <li><hr class="dropdown-divider"/></li>
+                                <li><a class="dropdown-item" asp-page="/Categorias/Create">Nova Categoria</a></li>
+                                <li><a class="dropdown-item" asp-page="/Tags/Create">Nova Tag</a></li>
+                            </ul>
+                        </li>
+                    }
+                </ul>
+                <div class="d-flex align-items-center gap-2">
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        <a class="btn btn-outline-light btn-sm" asp-page="/Servicos/Create">
+                            <i class="bi bi-plus-circle me-1"></i>Submeter Serviço
+                        </a>
+                    }
+                    <!-- Alternar tema claro/escuro -->
+                    <button class="btn btn-outline-light btn-sm" type="button" id="btnTema"
+                            title="Alternar tema claro/escuro" aria-label="Alternar tema">
+                        <i class="bi bi-moon-stars-fill" id="iconeTema"></i>
+                    </button>
+                    <!-- Notificações SignalR -->
+                    <div id="notificacao-container" class="position-relative" style="display:none">
+                        <button class="btn btn-outline-light btn-sm" type="button" id="btnNotificacoes">
+                            <i class="bi bi-bell-fill"></i>
+                            <span class="badge bg-danger" id="badge-count">0</span>
+                        </button>
+                    </div>
+                    <partial name="_LoginPartial"/>
+                </div>
+            </div>
+        </div>
+    </nav>
+</header>
+
+<!-- Toast de notificações SignalR -->
+<div class="toast-container position-fixed top-0 end-0 p-3" style="z-index:9999">
+    <div id="toastNotificacao" class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+            <div class="toast-body" id="toast-mensagem">
+                <i class="bi bi-check-circle me-1"></i> Novo serviço aprovado!
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    </div>
+</div>
+
+<div class="container mt-3 layout-content">
+    @if (TempData["Sucesso"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle me-1"></i> @TempData["Sucesso"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["Erro"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle me-1"></i> @TempData["Erro"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["Aviso"] != null)
+    {
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-circle me-1"></i> @TempData["Aviso"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <main role="main" class="pb-4">
+        @RenderBody()
+    </main>
+</div>
+
+<footer class="border-top bg-light mt-4 py-3">
+    <div class="container text-center text-muted small">
+        <span>&copy; 2025-2026 Serviços Digitais Europeus &mdash;</span>
+        <a asp-page="/Sobre" class="text-muted ms-1">Sobre o Projeto</a>
+        <span class="mx-1">|</span>
+        <a asp-controller="Home" asp-action="Privacy" class="text-muted">Privacidade</a>
+    </div>
+</footer>
+
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+<script src="~/js/site.js" asp-append-version="true"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+<script>
+    // Ligação ao hub SignalR para notificações em tempo real
+    const connection = new signalR.HubConnectionBuilder()
+        .withUrl("/hubs/notificacoes")
+        .withAutomaticReconnect()
+        .build();
+
+    let contadorNotificacoes = 0;
+
+    connection.on("NovoServicoAprovado", function (nomeServico) {
+        contadorNotificacoes++;
+        const badge = document.getElementById("badge-count");
+        const container = document.getElementById("notificacao-container");
+        const mensagem = document.getElementById("toast-mensagem");
+
+        if (badge) badge.textContent = contadorNotificacoes;
+        if (container) container.style.display = "block";
+        if (mensagem) mensagem.innerHTML = `<i class="bi bi-check-circle me-1"></i> Novo serviço aprovado: <strong>${nomeServico}</strong>`;
+
+        const toastEl = document.getElementById("toastNotificacao");
+        if (toastEl) {
+            const toast = new bootstrap.Toast(toastEl);
+            toast.show();
+        }
+    });
+
+    connection.start().catch(err => console.error("Erro SignalR:", err.toString()));
+</script>
+<script>
+    // Alternância de tema claro/escuro com persistência em localStorage
+    (function () {
+        const btn = document.getElementById('btnTema');
+        const icone = document.getElementById('iconeTema');
+
+        function aplicarIcone(tema) {
+            if (!icone) return;
+            icone.className = tema === 'dark' ? 'bi bi-sun-fill' : 'bi bi-moon-stars-fill';
+        }
+
+        aplicarIcone(document.documentElement.getAttribute('data-bs-theme'));
+
+        if (btn) {
+            btn.addEventListener('click', function () {
+                const atual = document.documentElement.getAttribute('data-bs-theme');
+                const novo = atual === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-bs-theme', novo);
+                try { localStorage.setItem('tema', novo); } catch (e) { /* ignora */ }
+                aplicarIcone(novo);
+            });
+        }
+    })();
+</script>
+@await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
