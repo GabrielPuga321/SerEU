@@ -1,3 +1,17 @@
+@using Microsoft.EntityFrameworkCore
+@using EuropeanListofDigitalServices.Data
+@inject ApplicationDbContext Db
+@{
+    // Para administradores, calcula o número de serviços pendentes de aprovação.
+    // Este valor inicializa o "badge" da campainha; depois é atualizado em
+    // tempo real via SignalR.
+    var aprovacoesPendentes = 0;
+    var ehAdmin = User.IsInRole("Admin");
+    if (ehAdmin)
+    {
+        aprovacoesPendentes = await Db.ServicosDigitais.CountAsync(s => !s.Aprovado);
+    }
+}
 <!DOCTYPE html>
 <html lang="pt">
 <head>
@@ -85,6 +99,16 @@
                             title="Alternar tema claro/escuro" aria-label="Alternar tema">
                         <i class="bi bi-moon-stars-fill" id="iconeTema"></i>
                     </button>
+                    @if (ehAdmin)
+                    {
+                        <!-- Campainha de aprovações pendentes (só administradores) -->
+                        <a class="btn btn-outline-light btn-sm position-relative" asp-page="/Admin/Aprovacoes"
+                           id="btnAprovacoesPendentes" title="Aprovações pendentes" aria-label="Aprovações pendentes">
+                            <i class="bi bi-bell-fill"></i>
+                            <span class="badge rounded-pill bg-danger position-absolute top-0 start-100 translate-middle @(aprovacoesPendentes == 0 ? "d-none" : "")"
+                                  id="badge-pendentes">@aprovacoesPendentes</span>
+                        </a>
+                    }
                     <!-- Notificações SignalR -->
                     <div id="notificacao-container" class="position-relative" style="display:none">
                         <button class="btn btn-outline-light btn-sm" type="button" id="btnNotificacoes">
@@ -109,6 +133,18 @@
             <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
         </div>
     </div>
+    @if (ehAdmin)
+    {
+        <!-- Toast para novas submissões pendentes (só administradores) -->
+        <div id="toastPendente" class="toast align-items-center text-dark bg-warning border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body" id="toast-pendente-mensagem">
+                    <i class="bi bi-bell-fill me-1"></i> Nova submissão a aguardar aprovação!
+                </div>
+                <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        </div>
+    }
 </div>
 
 <div class="container mt-3 layout-content">
@@ -176,6 +212,33 @@
             const toast = new bootstrap.Toast(toastEl);
             toast.show();
         }
+    });
+
+    // Atualiza o "badge" de aprovações pendentes (só existe para administradores).
+    function atualizarBadgePendentes(total) {
+        const badge = document.getElementById("badge-pendentes");
+        if (!badge) return;
+        badge.textContent = total;
+        badge.classList.toggle("d-none", !total || total <= 0);
+    }
+
+    // Nova submissão a aguardar aprovação: atualiza contador e mostra um toast.
+    connection.on("AprovacaoPendente", function (nomeServico, totalPendentes) {
+        atualizarBadgePendentes(totalPendentes);
+
+        const mensagem = document.getElementById("toast-pendente-mensagem");
+        if (mensagem) mensagem.innerHTML = `<i class="bi bi-bell-fill me-1"></i> Nova submissão a aguardar aprovação: <strong>${nomeServico}</strong>`;
+
+        const toastEl = document.getElementById("toastPendente");
+        if (toastEl) {
+            const toast = new bootstrap.Toast(toastEl);
+            toast.show();
+        }
+    });
+
+    // Uma aprovação foi resolvida (aprovada ou rejeitada): apenas atualiza o contador.
+    connection.on("AprovacoesAtualizadas", function (totalPendentes) {
+        atualizarBadgePendentes(totalPendentes);
     });
 
     connection.start().catch(err => console.error("Erro SignalR:", err.toString()));

@@ -89,6 +89,11 @@ a:focus-visible {
     background: linear-gradient(100deg, var(--eu-primary-dark) 0%, var(--eu-primary) 100%) !important;
     backdrop-filter: saturate(180%) blur(6px);
     box-shadow: var(--eu-shadow-md) !important;
+    /* O backdrop-filter cria um novo contexto de empilhamento na navbar.
+       Sem posição/z-index, o menu dropdown ficaria preso por baixo do
+       conteúdo da página (hero, cartões). Elevamos toda a navbar. */
+    position: relative;
+    z-index: 1030;
 }
 
 .navbar-brand {
@@ -113,6 +118,8 @@ a:focus-visible {
     border-radius: 0.75rem;
     box-shadow: var(--eu-shadow-lg);
     padding: 0.4rem;
+    /* Acima de qualquer conteúdo da página */
+    z-index: 1031;
 }
 
 .navbar .dropdown-item {

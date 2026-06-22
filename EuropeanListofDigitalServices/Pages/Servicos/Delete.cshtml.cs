@@ -1,14 +1,16 @@
 using EuropeanListofDigitalServices.Data;
+using EuropeanListofDigitalServices.Hubs;
 using EuropeanListofDigitalServices.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 
 namespace EuropeanListofDigitalServices.Pages.Servicos;
 
 [Authorize(Roles = "Admin")]
-public class DeleteModel(ApplicationDbContext db) : PageModel
+public class DeleteModel(ApplicationDbContext db, IHubContext<NotificacoesHub> hubContext) : PageModel
 {
     public ServicoDigital? Servico { get; set; }
 
@@ -28,9 +30,19 @@ public class DeleteModel(ApplicationDbContext db) : PageModel
         var servico = await db.ServicosDigitais.FindAsync(id);
         if (servico == null) return NotFound();
 
+        var estavaPendente = !servico.Aprovado;
+
         // Verificar se a categoria tem outros serviços (proteção de integridade)
         db.ServicosDigitais.Remove(servico);
         await db.SaveChangesAsync();
+
+        // Se o serviço removido estava pendente, atualizar o contador nos admins
+        if (estavaPendente)
+        {
+            var totalPendentes = await db.ServicosDigitais.CountAsync(s => !s.Aprovado);
+            await hubContext.Clients.Group(NotificacoesHub.GrupoAdministradores)
+                .SendAsync("AprovacoesAtualizadas", totalPendentes);
+        }
 
         TempData["Sucesso"] = "Serviço eliminado com sucesso.";
         return RedirectToPage("Index");
