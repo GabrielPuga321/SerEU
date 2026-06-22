@@ -1,0 +1,148 @@
+@page
+@model EuropeanListofDigitalServices.Pages.SobreModel
+@{
+    ViewData["Title"] = "Sobre o Projeto";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <h1 class="mb-4"><i class="bi bi-info-circle me-2 text-primary"></i>Sobre o Projeto</h1>
+
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="bi bi-mortarboard me-2"></i>Informação Académica</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-borderless mb-0">
+                    <tbody>
+                        <tr><th>Curso</th><td>Licenciatura em Engenharia Informática</td></tr>
+                        <tr><th>Disciplina</th><td>Desenvolvimento Web</td></tr>
+                        <tr><th>Ano Letivo</th><td>2025/2026</td></tr>
+                        <tr><th>Ano Curricular</th><td>2.º ano, 2.º semestre</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="bi bi-people me-2"></i>Autores</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted mb-2">Grupo de 2 alunos:</p>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item"><i class="bi bi-person me-2"></i><strong>Nº XXXXX</strong> — Nome do Aluno 1</li>
+                    <li class="list-group-item"><i class="bi bi-person me-2"></i><strong>Nº XXXXX</strong> — Nome do Aluno 2</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="bi bi-key me-2"></i>Credenciais de Acesso</h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-warning small">
+                    <i class="bi bi-exclamation-triangle me-1"></i>
+                    Credenciais apenas para fins de avaliação académica.
+                </div>
+                <table class="table table-sm table-bordered">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Tipo</th>
+                            <th>Email</th>
+                            <th>Password</th>
+                            <th>Permissões</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span class="badge bg-danger">Admin</span></td>
+                            <td><code>admin@eldss.eu</code></td>
+                            <td><code>Admin@1234</code></td>
+                            <td>Acesso total, aprovação de serviços, gestão de categorias e tags</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge bg-primary">Utilizador</span></td>
+                            <td><code>utilizador@eldss.eu</code></td>
+                            <td><code>User@1234</code></td>
+                            <td>Submissão de serviços, avaliações e comentários</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-secondary text-white">
+                <h5 class="mb-0"><i class="bi bi-tools me-2"></i>Tecnologias e Bibliotecas Utilizadas</h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <h6 class="fw-bold">Frameworks & Runtime</h6>
+                        <ul class="list-unstyled">
+                            <li><i class="bi bi-check2 text-success me-1"></i><strong>ASP.NET Core 10</strong> — Framework principal (<a href="https://dotnet.microsoft.com" target="_blank">microsoft.com</a>)</li>
+                            <li><i class="bi bi-check2 text-success me-1"></i><strong>Razor Pages</strong> — Interface do utilizador server-side</li>
+                            <li><i class="bi bi-check2 text-success me-1"></i><strong>ASP.NET Core MVC</strong> — API REST</li>
+                            <li><i class="bi bi-check2 text-success me-1"></i><strong>SignalR</strong> — Notificações em tempo real</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="fw-bold">Base de Dados & ORM</h6>
+                        <ul class="list-unstyled">
+                            <li><i class="bi bi-check2 text-success me-1"></i><strong>Entity Framework Core 10</strong> — ORM (<a href="https://learn.microsoft.com/en-us/ef/core/" target="_blank">microsoft.com</a>)</li>
+                            <li><i class="bi bi-check2 text-success me-1"></i><strong>SQLite</strong> — Base de dados relacional</li>
+                            <li><i class="bi bi-check2 text-success me-1"></i><strong>LINQ</strong> — Consultas à base de dados</li>
+                            <li><i class="bi bi-check2 text-success me-1"></i><strong>ASP.NET Core Identity</strong> — Autenticação e autorização</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="fw-bold">Frontend</h6>
+                        <ul class="list-unstyled">
+                            <li><i class="bi bi-check2 text-success me-1"></i><strong>Bootstrap 5</strong> — Framework CSS (<a href="https://getbootstrap.com" target="_blank">getbootstrap.com</a>)</li>
+                            <li><i class="bi bi-check2 text-success me-1"></i><strong>Bootstrap Icons 1.11</strong> — Ícones (<a href="https://icons.getbootstrap.com" target="_blank">icons.getbootstrap.com</a>)</li>
+                            <li><i class="bi bi-check2 text-success me-1"></i><strong>jQuery 3</strong> — Biblioteca JavaScript (<a href="https://jquery.com" target="_blank">jquery.com</a>)</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="fw-bold">Ferramentas de Desenvolvimento</h6>
+                        <ul class="list-unstyled">
+                            <li><i class="bi bi-check2 text-success me-1"></i><strong>JetBrains Rider</strong> — IDE principal</li>
+                            <li><i class="bi bi-check2 text-success me-1"></i><strong>EF Core Migrations</strong> — Migrações de BD</li>
+                            <li><i class="bi bi-check2 text-success me-1"></i><strong>Docker</strong> — Containerização para publicação</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-dark text-white">
+                <h5 class="mb-0"><i class="bi bi-cpu me-2"></i>Funcionalidades Implementadas</h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-2">
+                    <div class="col-md-6">
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>CRUD completo de serviços</li>
+                            <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>CRUD de categorias (Admin)</li>
+                            <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>CRUD de tags (Admin)</li>
+                            <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>CRUD de avaliações</li>
+                            <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>Pesquisa e filtros de serviços</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>Controlo de acessos (Admin/Utilizador)</li>
+                            <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>Aprovação de serviços (Admin)</li>
+                            <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>Notificações em tempo real (SignalR)</li>
+                            <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>API REST documentada</li>
+                            <li class="list-group-item"><i class="bi bi-check2-circle text-success me-2"></i>Páginas de erro personalizadas</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
