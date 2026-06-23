@@ -1,0 +1,125 @@
+@page
+@model SerEU.Pages.Admin.IndexModel
+@{
+    ViewData["Title"] = "Painel de Administração";
+}
+
+<h1 class="mb-4"><i class="bi bi-gear me-2 text-primary"></i>Painel de Administração</h1>
+
+<!-- Estatísticas -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white shadow-sm border-0">
+            <div class="card-body text-center">
+                <div class="fs-2 fw-bold">@Model.TotalServicos</div>
+                <div>Serviços</div>
+                <small>@Model.ServicosPendentes pendente(s)</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white shadow-sm border-0">
+            <div class="card-body text-center">
+                <div class="fs-2 fw-bold">@Model.TotalCategorias</div>
+                <div>Categorias</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-info text-white shadow-sm border-0">
+            <div class="card-body text-center">
+                <div class="fs-2 fw-bold">@Model.TotalTags</div>
+                <div>Tags</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-dark shadow-sm border-0">
+            <div class="card-body text-center">
+                <div class="fs-2 fw-bold">@Model.TotalUtilizadores</div>
+                <div>Utilizadores</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Ações rápidas -->
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-header"><i class="bi bi-clock-history me-2"></i>Aprovações Pendentes</div>
+            <div class="card-body d-flex flex-column justify-content-between">
+                <p>@Model.ServicosPendentes serviço(s) aguardam aprovação.</p>
+                <a asp-page="Aprovacoes" class="btn btn-warning btn-sm align-self-start">
+                    <i class="bi bi-check2-circle me-1"></i>Gerir Aprovações
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-header"><i class="bi bi-grid me-2"></i>Categorias</div>
+            <div class="card-body d-flex flex-column justify-content-between">
+                <p>Gerir as categorias de serviços digitais.</p>
+                <div class="d-flex gap-2">
+                    <a asp-page="/Categorias/Index" class="btn btn-outline-primary btn-sm">Ver Todas</a>
+                    <a asp-page="/Categorias/Create" class="btn btn-primary btn-sm">Nova</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-header"><i class="bi bi-tags me-2"></i>Tags</div>
+            <div class="card-body d-flex flex-column justify-content-between">
+                <p>Gerir as tags de classificação de serviços.</p>
+                <div class="d-flex gap-2">
+                    <a asp-page="/Tags/Index" class="btn btn-outline-primary btn-sm">Ver Todas</a>
+                    <a asp-page="/Tags/Create" class="btn btn-primary btn-sm">Nova</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Últimos serviços -->
+<h4 class="mb-3">Serviços Recentes</h4>
+<div class="table-responsive">
+    <table class="table table-hover align-middle">
+        <thead class="table-light">
+            <tr>
+                <th>Nome</th>
+                <th>Categoria</th>
+                <th>Submetido em</th>
+                <th>Estado</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var s in Model.ServicosRecentes)
+            {
+                <tr>
+                    <td>@s.Nome</td>
+                    <td><span class="badge bg-secondary">@s.Categoria.Nome</span></td>
+                    <td>@s.DataSubmissao.ToString("dd/MM/yyyy")</td>
+                    <td>
+                        @if (s.Aprovado)
+                        {
+                            <span class="badge bg-success">Aprovado</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-warning text-dark">Pendente</span>
+                        }
+                    </td>
+                    <td>
+                        <a asp-page="/Servicos/Details" asp-route-id="@s.Id" class="btn btn-outline-primary btn-sm">Ver</a>
+                        <a asp-page="/Servicos/Delete" asp-route-id="@s.Id" class="btn btn-outline-danger btn-sm">
+                            <i class="bi bi-trash"></i>
+                        </a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
