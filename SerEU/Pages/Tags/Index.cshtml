@@ -1,0 +1,39 @@
+@page
+@model SerEU.Pages.Tags.IndexModel
+@{
+    ViewData["Title"] = "Tags";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="bi bi-tags me-2 text-primary"></i>Tags</h1>
+    @if (User.IsInRole("Admin"))
+    {
+        <a asp-page="Create" class="btn btn-primary"><i class="bi bi-plus-circle me-1"></i>Nova Tag</a>
+    }
+</div>
+
+<div class="card shadow-sm border-0">
+    <div class="card-body">
+        <div class="d-flex flex-wrap gap-2">
+            @foreach (var tag in Model.Tags)
+            {
+                <div class="d-flex align-items-center gap-1">
+                    <a asp-page="/Servicos/Index" asp-route-tagId="@tag.Id"
+                       class="badge bg-light text-dark border text-decoration-none fs-6 px-3 py-2">
+                        <i class="bi bi-tag me-1"></i>@tag.Nome
+                        <span class="badge bg-secondary ms-1">@tag.Servicos.Count(s => s.Aprovado)</span>
+                    </a>
+                    @if (User.IsInRole("Admin"))
+                    {
+                        <a asp-page="Edit" asp-route-id="@tag.Id" class="btn btn-outline-secondary btn-sm py-1">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        <a asp-page="Delete" asp-route-id="@tag.Id" class="btn btn-outline-danger btn-sm py-1">
+                            <i class="bi bi-trash"></i>
+                        </a>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+</div>
