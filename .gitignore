@@ -3,3 +3,10 @@ obj/
 /packages/
 riderModule.iml
 /_ReSharper.Caches/
+
+# Ficheiros de configuração com credenciais
+SerEU/appsettings.Development.json
+SerEU/appsettings.Production.json
+
+# User secrets do .NET
+secrets.json

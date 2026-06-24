@@ -55,7 +55,7 @@ builder.Services.ConfigureApplicationCookie(options =>
 
 // Serviço de envio de emails via SMTP (confirmação de conta, recuperação de palavra-passe)
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
-builder.Services.AddTransient<IEmailSender, SmtpEmailSender>();
+builder.Services.AddTransient<IEmailSender, MailKitEmailSender>();
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();

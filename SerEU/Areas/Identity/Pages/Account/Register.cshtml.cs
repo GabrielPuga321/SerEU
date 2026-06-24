@@ -79,16 +79,20 @@ public class RegisterModel(
             var userId = await userManager.GetUserIdAsync(user);
             var code = await userManager.GenerateEmailConfirmationTokenAsync(user);
             code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+            
             var callbackUrl = Url.Page(
                 "/Account/ConfirmEmail",
                 pageHandler: null,
                 values: new { area = "Identity", userId, code, returnUrl },
                 protocol: Request.Scheme);
+            
+            // E-mail
+            const string subject = "Confirme o seu email — SerEU";
+            var htmlmsg = $"Olá!<br/><br/>Obrigado por se registar no <strong>SerEU</strong>.<br/>" +
+                          $"Confirme a sua conta clicando <a href='{HtmlEncoder.Default.Encode(callbackUrl ?? string.Empty)}'>neste link</a>.<br/><br/>" +
+                          "Se não foi você a criar esta conta, ignore este email.";
 
-            await emailSender.SendEmailAsync(Input.Email, "Confirme o seu email — Serviços Digitais Europeus",
-                $"Olá!<br/><br/>Obrigado por se registar nos <strong>Serviços Digitais Europeus</strong>.<br/>" +
-                $"Confirme a sua conta clicando <a href='{HtmlEncoder.Default.Encode(callbackUrl ?? string.Empty)}'>neste link</a>.<br/><br/>" +
-                "Se não foi você a criar esta conta, ignore este email.");
+            await emailSender.SendEmailAsync(Input.Email, subject, htmlmsg);
 
             // Caso seja exigida confirmação de conta, encaminha para a página respetiva
             if (userManager.Options.SignIn.RequireConfirmedAccount)
