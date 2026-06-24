@@ -23,7 +23,7 @@ builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 // Configuração do Identity com suporte a Roles e política de palavra-passe reforçada
 builder.Services.AddDefaultIdentity<IdentityUser>(options =>
     {
-        options.SignIn.RequireConfirmedAccount = true;
+        options.SignIn.RequireConfirmedAccount = false;
 
         // Palavra-passe forte: 8+ caracteres, dígitos, maiúsculas e símbolos
         options.Password.RequireDigit = true;

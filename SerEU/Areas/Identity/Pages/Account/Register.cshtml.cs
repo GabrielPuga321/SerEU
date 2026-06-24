@@ -94,11 +94,15 @@ public class RegisterModel(
                           $"Confirme a sua conta clicando <a href='{HtmlEncoder.Default.Encode(callbackUrl ?? string.Empty)}'>neste link</a>.<br/><br/>" +
                           "Se não foi você a criar esta conta, ignore este email.";
 
-            await emailSender.SendEmailAsync(Input.Email, subject, htmlmsg);
-
-            // Caso seja exigida confirmação de conta, encaminha para a página respetiva
-            if (userManager.Options.SignIn.RequireConfirmedAccount)
-                return RedirectToPage("RegisterConfirmation", new { email = Input.Email, returnUrl });
+            try
+            {
+                await emailSender.SendEmailAsync(Input.Email, subject, htmlmsg);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Falha ao enviar email de confirmação para {Email}", Input.Email);
+                // Não falha o registo - o utilizador pode confirmar depois
+            }
 
             await signInManager.SignInAsync(user, isPersistent: false);
             return LocalRedirect(returnUrl);

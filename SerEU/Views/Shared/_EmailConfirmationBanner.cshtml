@@ -1,0 +1,29 @@
+@using Microsoft.AspNetCore.Identity
+@inject SignInManager<IdentityUser> SignInManager
+@inject UserManager<IdentityUser> UserManager
+
+@{
+    var user = await UserManager.GetUserAsync(User);
+    if (user != null && !user.EmailConfirmed)
+    {
+        <div class="alert alert-warning alert-dismissible fade show mb-0" role="alert">
+            <i class="bi bi-envelope-exclamation me-2"></i>
+            <strong>Email não confirmado:</strong> A sua conta não está verificada. Por favor, se solicitou o reenvio aguarde uns segundos antes de tentar novamente.
+            <form asp-area="Identity" asp-page="/Account/ResendConfirmation" method="post" class="d-inline ms-2" id="resendEmailForm">
+                <input type="hidden" name="Input.Email" value="@user.Email" />
+                <button type="submit" class="btn btn-sm btn-outline-warning" id="resendEmailBtn">
+                    <i class="bi bi-arrow-clockwise me-1"></i>Reenviar email de confirmação
+                </button>
+            </form>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
+        </div>
+        
+        <script>
+            document.getElementById('resendEmailForm').addEventListener('submit', function() {
+                var btn = document.getElementById('resendEmailBtn');
+                btn.disabled = true;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> A processar, por favor aguarde uns instantes...';
+            });
+        </script>
+    }
+}

@@ -17,7 +17,7 @@
 <head>
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>@ViewData["Title"] - SerEu - Serviços Digitais Europeis</title>
+    <title>SerEu | @ViewData["Title"] </title>
     <script>
         // Aplica o tema (claro/escuro) o mais cedo possível para evitar "flash" visual.
         (function () {
@@ -39,6 +39,7 @@
     <link rel="stylesheet" href="~/SerEU.styles.css" asp-append-version="true"/>
 </head>
 <body>
+<partial name="_EmailConfirmationBanner" />
 <header>
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
         <div class="container">
