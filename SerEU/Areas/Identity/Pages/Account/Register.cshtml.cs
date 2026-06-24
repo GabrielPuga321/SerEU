@@ -88,7 +88,9 @@ public class RegisterModel(
             
             // E-mail
             const string subject = "Confirme o seu email — SerEU";
-            var htmlmsg = $"Olá!<br/><br/>Obrigado por se registar no <strong>SerEU</strong>.<br/>" +
+            var logoUrl = $"{Request.Scheme}://{Request.Host}/assets/logo-sereu.svg";
+            var htmlmsg = $"<div style='text-align: center;'><img src='{logoUrl}' alt='SerEU Logo' style='height: 64;' /></div>" +
+                          $"Olá!<br/><br/>Obrigado por se registar no <strong>SerEU</strong>.<br/>" +
                           $"Confirme a sua conta clicando <a href='{HtmlEncoder.Default.Encode(callbackUrl ?? string.Empty)}'>neste link</a>.<br/><br/>" +
                           "Se não foi você a criar esta conta, ignore este email.";
 
