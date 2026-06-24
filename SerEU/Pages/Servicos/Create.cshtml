@@ -1,0 +1,91 @@
+@page
+@model SerEU.Pages.Servicos.CreateModel
+@{
+    ViewData["Title"] = "Submeter Serviço";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <nav aria-label="breadcrumb" class="mb-3">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a asp-page="/Index">Início</a></li>
+                <li class="breadcrumb-item"><a asp-page="Index">Serviços</a></li>
+                <li class="breadcrumb-item active">Submeter</li>
+            </ol>
+        </nav>
+
+        <h1 class="mb-1"><i class="bi bi-plus-circle me-2 text-primary"></i>Submeter Serviço</h1>
+        <p class="text-muted mb-4">O serviço será revisto por um administrador antes de ser publicado.</p>
+
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-4">
+                <form method="post">
+                    <div class="row g-3">
+                        <div class="col-md-8">
+                            <label asp-for="Servico.Nome" class="form-label fw-bold"></label>
+                            <input asp-for="Servico.Nome" class="form-control" placeholder="Ex: Nextcloud"/>
+                            <span asp-validation-for="Servico.Nome" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="Servico.CategoriaId" class="form-label fw-bold"></label>
+                            <select asp-for="Servico.CategoriaId" asp-items="Model.CategoriasSelectList" class="form-select">
+                                <option value="">Selecione...</option>
+                            </select>
+                            <span asp-validation-for="Servico.CategoriaId" class="text-danger small"></span>
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="Servico.Descricao" class="form-label fw-bold"></label>
+                            <textarea asp-for="Servico.Descricao" class="form-control" rows="4"
+                                      placeholder="Descreva o serviço, as suas funcionalidades e vantagens..."></textarea>
+                            <span asp-validation-for="Servico.Descricao" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Servico.Url" class="form-label fw-bold"></label>
+                            <input asp-for="Servico.Url" class="form-control" placeholder="https://exemplo.com"/>
+                            <span asp-validation-for="Servico.Url" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Servico.LogotipoUrl" class="form-label fw-bold"></label>
+                            <input asp-for="Servico.LogotipoUrl" class="form-control" placeholder="https://exemplo.com/logo.png"/>
+                            <span asp-validation-for="Servico.LogotipoUrl" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Servico.Pais" class="form-label fw-bold"></label>
+                            <input asp-for="Servico.Pais" class="form-control" placeholder="Ex: Alemanha"/>
+                            <span asp-validation-for="Servico.Pais" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Servico.Licenca" class="form-label fw-bold"></label>
+                            <input asp-for="Servico.Licenca" class="form-control" placeholder="Ex: MIT, GPL-3.0, Freemium"/>
+                            <span asp-validation-for="Servico.Licenca" class="text-danger small"></span>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-bold">Tags</label>
+                            <div class="d-flex flex-wrap gap-2">
+                                @foreach (var tag in Model.Tags)
+                                {
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="TagsSelecionadas"
+                                               value="@tag.Id" id="tag_@tag.Id"/>
+                                        <label class="form-check-label" for="tag_@tag.Id">@tag.Nome</label>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-send me-1"></i>Submeter para Aprovação
+                        </button>
+                        <a asp-page="Index" class="btn btn-outline-secondary">Cancelar</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial"/>
+}

@@ -1,0 +1,139 @@
+@page
+@model SerEU.Pages.Servicos.IndexModel
+@{
+    ViewData["Title"] = "Serviços Digitais";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1><i class="bi bi-search me-2 text-primary"></i>Serviços Digitais</h1>
+    @if (User.Identity?.IsAuthenticated == true)
+    {
+        <a asp-page="Create" class="btn btn-primary"><i class="bi bi-plus-circle me-1"></i>Submeter Serviço</a>
+    }
+</div>
+
+<!-- Filtros -->
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <form method="get">
+            <div class="row g-2">
+                <div class="col-md-4">
+                    <input type="text" name="pesquisa" value="@Model.Pesquisa" class="form-control"
+                           placeholder="Pesquisar por nome ou descrição..."/>
+                </div>
+                <div class="col-md-3">
+                    <select name="categoriaId" class="form-select">
+                        <option value="">Todas as categorias</option>
+                        @foreach (var cat in Model.Categorias)
+                        {
+                            <option value="@cat.Id" selected="@(Model.CategoriaId == cat.Id)">@cat.Nome</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <select name="tagId" class="form-select">
+                        <option value="">Todas as tags</option>
+                        @foreach (var tag in Model.Tags)
+                        {
+                            <option value="@tag.Id" selected="@(Model.TagId == tag.Id)">@tag.Nome</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-2 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary flex-grow-1">
+                        <i class="bi bi-search"></i> Filtrar
+                    </button>
+                    <a asp-page="Index" class="btn btn-outline-secondary">
+                        <i class="bi bi-x-circle"></i>
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Resultados -->
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <span class="text-muted">@Model.Servicos.Count resultado(s) encontrado(s)</span>
+</div>
+
+@if (!Model.Servicos.Any())
+{
+    <div class="alert alert-info text-center py-5">
+        <i class="bi bi-search fs-1 d-block mb-2"></i>
+        Nenhum serviço encontrado com os filtros aplicados.
+        <br/>
+        <a asp-page="Index" class="btn btn-outline-primary mt-2">Ver todos os serviços</a>
+    </div>
+}
+else
+{
+    <div class="row g-3">
+        @foreach (var servico in Model.Servicos)
+        {
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 shadow-sm border-0 card-servico">
+                    <div class="card-body">
+                        <div class="d-flex align-items-start gap-3 mb-2">
+                            @if (!string.IsNullOrEmpty(servico.LogotipoUrl))
+                            {
+                                <img src="@servico.LogotipoUrl" alt="@servico.Nome" class="rounded"
+                                     style="width:48px;height:48px;object-fit:contain" onerror="this.style.display='none'"/>
+                            }
+                            else
+                            {
+                                <div class="bg-primary text-white rounded d-flex align-items-center justify-content-center flex-shrink-0"
+                                     style="width:48px;height:48px;font-size:1.5rem">
+                                    <i class="bi @(servico.Categoria.Icone ?? "bi-app")"></i>
+                                </div>
+                            }
+                            <div class="min-w-0">
+                                <h5 class="card-title mb-1 text-truncate">@servico.Nome</h5>
+                                <div class="d-flex flex-wrap gap-1">
+                                    <span class="badge bg-secondary">@servico.Categoria.Nome</span>
+                                    @if (!string.IsNullOrEmpty(servico.Pais))
+                                    {
+                                        <span class="badge bg-light text-dark border">
+                                            <i class="bi bi-geo-alt me-1"></i>@servico.Pais
+                                        </span>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                        <p class="card-text text-muted small">
+                            @(servico.Descricao.Length > 120 ? servico.Descricao[..120] + "…" : servico.Descricao)
+                        </p>
+                        <div class="d-flex flex-wrap gap-1">
+                            @foreach (var tag in servico.Tags.Take(4))
+                            {
+                                <span class="badge bg-light text-dark border small">@tag.Nome</span>
+                            }
+                        </div>
+                    </div>
+                    <div class="card-footer bg-transparent border-0 d-flex justify-content-between align-items-center">
+                        <small class="text-muted">
+                            <i class="bi bi-star-fill text-warning me-1"></i>
+                            @(servico.MediaAvaliacoes > 0 ? servico.MediaAvaliacoes.ToString("F1") : "—")
+                            (@servico.TotalAvaliacoes avaliações)
+                        </small>
+                        <div class="d-flex gap-1">
+                            <a asp-page="Details" asp-route-id="@servico.Id" class="btn btn-primary btn-sm">Ver</a>
+                            @if (User.IsInRole("Admin") || servico.UtilizadorId == Model.UtilizadorAtualId)
+                            {
+                                <a asp-page="Edit" asp-route-id="@servico.Id" class="btn btn-outline-secondary btn-sm">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                            }
+                            @if (User.IsInRole("Admin"))
+                            {
+                                <a asp-page="Delete" asp-route-id="@servico.Id" class="btn btn-outline-danger btn-sm">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}

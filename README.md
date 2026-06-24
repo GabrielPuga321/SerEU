@@ -1,7 +1,9 @@
-# European List of Digital Services (ELDSS)
+# SerEU
+![logo](./assets/logo-sereu.svg)
+> *Seja mais Europeu, e escolha serviços Europeus*
 
-Plataforma de procura e listagem de serviços digitais europeus ou abertos.
-Trabalho prático de Desenvolvimento Web — Eng. Informática.
+Plataforma de procura e listagem de serviços digitais europeus ou abertos.  
+Trabalho prático de Desenvolvimento Web — Licenciatura Engenharia Informática.
 
 ## Stack
 
@@ -23,19 +25,33 @@ O trabalho está dividido em branches:
 
 A branch **main** centraliza todo o trabalho integrado.
 
-## Como correr
+## Pré-requisitos
+
+### Configurar SMTP
+Para que o envio de emails (confirmação de conta, recuperação de palavra-passe) funcione:
+
+
+1. **Copia o ficheiro de exemplo:**
+   ```bash
+   cp SerEU/appsettings.example.json SerEU/appsettings.json
+   ```
+
+2. **Preencha as credenciais** no ficheiro com os seus dados SMTP (servidor, porta, utilizador, password, etc.).
+
+## Como executar
 
 ```bash
-cd EuropeanListofDigitalServices
+cd SerEU
 dotnet run
 ```
+
 
 ### Utilizadores de teste
 
 | Papel | Email | Password |
 |-------|-------|----------|
-| Admin | admin@eldss.eu | Admin@1234 |
-| Utilizador | utilizador@eldss.eu | User@1234 |
+| Admin | admin@sereu.diogop.eu | Admin@1234 |
+| Utilizador | utilizador@sereu.diogop.eu | User@1234 |
 
 ## API REST
 
