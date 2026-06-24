@@ -32,6 +32,32 @@ cd SerEU
 dotnet run
 ```
 
+### Configuração do Email (SMTP)
+
+Para que o envio de emails (confirmação de conta, recuperação de palavra-passe) funcione:
+
+1. **Copia o ficheiro de exemplo:**
+   ```bash
+   cp SerEU/appsettings.example.json SerEU/appsettings.Development.json
+   ```
+
+2. **Preencha as credenciais** no ficheiro `appsettings.Development.json`:
+   ```json
+   {
+     "EmailSettings": {
+       "Host": "smtp.protonmail.ch",
+       "Port": 587,
+       "EnableSsl": true,
+       "User": "info@sereu.diogop.eu",
+       "Password": "ASQF4NQ1KDXQAURH",
+       "FromEmail": "info@sereu.diogop.eu",
+       "FromName": "SerEU"
+     }
+   }
+   ```
+
+3. **O ficheiro `.gitignore` já está configurado** para ignorar ficheiros de configuração com credenciais, pelo que o teu token não será exposto no repositório.
+
 ### Utilizadores de teste
 
 | Papel | Email | Password |
