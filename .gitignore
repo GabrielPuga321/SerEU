@@ -10,3 +10,9 @@ SerEU/appsettings.Production.json
 
 # User secrets do .NET
 secrets.json
+
+# Base de dados SQLite local (não deve ser versionada)
+app.db
+*.db
+*.db-shm
+*.db-wal
