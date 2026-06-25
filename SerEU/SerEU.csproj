@@ -16,6 +16,10 @@
         <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="10.0.3" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.3" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.3" />
+        <!-- Atualiza o SQLite nativo para corrigir o CVE-2025-6965 (GHSA-2m69-gcr7-jv3q);
+             o EF Core 10 traz transitivamente a versão 2.1.11, vulnerável. O bundle 3.0.3
+             arrasta o core/provider e a lib nativa já corrigida (SQLite 3.50.x). -->
+        <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="3.0.3" />
     </ItemGroup>
 
     <ItemGroup>
