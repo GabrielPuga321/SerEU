@@ -22,6 +22,9 @@ public class IndexModel(ApplicationDbContext db) : PageModel
     [BindProperty(SupportsGet = true)]
     public int? TagId { get; set; }
 
+    [BindProperty(SupportsGet = true)]
+    public string? OrdenarPor { get; set; } = "recentes";
+
     public string? UtilizadorAtualId { get; set; }
 
     public async Task OnGetAsync()
@@ -50,6 +53,36 @@ public class IndexModel(ApplicationDbContext db) : PageModel
         if (TagId.HasValue)
             query = query.Where(s => s.Tags.Any(t => t.Id == TagId.Value));
 
-        Servicos = await query.OrderByDescending(s => s.DataSubmissao).ToListAsync();
+        // Aplicar ordenação com base no parâmetro
+        Servicos = await ApplyOrdering(query).ToListAsync();
+    }
+
+    private IOrderedQueryable<ServicoDigital> ApplyOrdering(IQueryable<ServicoDigital> query)
+    {
+        return OrdenarPor switch
+        {
+            // Ordenação por nome
+            "nome-az" => query.OrderBy(s => s.Nome),
+            "nome-za" => query.OrderByDescending(s => s.Nome),
+            
+            // Ordenação por data de submissão
+            "recentes" => query.OrderByDescending(s => s.DataSubmissao),
+            "antigos" => query.OrderBy(s => s.DataSubmissao),
+            
+            // Ordenação por avaliação - usar expressões que EF Core consiga traduzir
+            "melhor-avaliado" => query.OrderByDescending(s => s.Avaliacoes.Average(a => a.Nota)).ThenByDescending(s => s.Avaliacoes.Count),
+            "pior-avaliado" => query.OrderBy(s => s.Avaliacoes.Average(a => a.Nota)).ThenBy(s => s.Avaliacoes.Count),
+            
+            // Ordenação por número de avaliações
+            "mais-avaliacoes" => query.OrderByDescending(s => s.Avaliacoes.Count).ThenByDescending(s => s.Avaliacoes.Average(a => a.Nota)),
+            "menos-avaliacoes" => query.OrderBy(s => s.Avaliacoes.Count).ThenBy(s => s.Avaliacoes.Average(a => a.Nota)),
+            
+            // Ordenação por país
+            "pais-az" => query.OrderBy(s => s.Pais ?? ""),
+            "pais-za" => query.OrderByDescending(s => s.Pais ?? ""),
+            
+            // Default: mais recentes primeiro
+            _ => query.OrderByDescending(s => s.DataSubmissao)
+        };
     }
 }
