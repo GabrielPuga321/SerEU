@@ -48,6 +48,33 @@
                     </a>
                 </div>
             </div>
+            <div class="row mt-2">
+                <div class="col-md-12">
+                    <div class="d-flex justify-content-end">
+                        <select name="ordenarPor" class="form-select form-select-sm" style="width: 250px;" onchange="this.form.submit()">
+                            <option value="">Ordenar por...</option>
+                            <optgroup label="Data de Submissão">
+                                <option value="recentes" selected="@(Model.OrdenarPor == "recentes")">Mais recentes primeiro</option>
+                                <option value="antigos" selected="@(Model.OrdenarPor == "antigos")">Mais antigos primeiro</option>
+                            </optgroup>
+                            <optgroup label="Nome">
+                                <option value="nome-az" selected="@(Model.OrdenarPor == "nome-az")">Nome (A-Z)</option>
+                                <option value="nome-za" selected="@(Model.OrdenarPor == "nome-za")">Nome (Z-A)</option>
+                            </optgroup>
+                            <optgroup label="Avaliação">
+                                <option value="melhor-avaliado" selected="@(Model.OrdenarPor == "melhor-avaliado")">Melhor avaliação</option>
+                                <option value="pior-avaliado" selected="@(Model.OrdenarPor == "pior-avaliado")">Pior avaliação</option>
+                                <option value="mais-avaliacoes" selected="@(Model.OrdenarPor == "mais-avaliacoes")">Mais avaliações</option>
+                                <option value="menos-avaliacoes" selected="@(Model.OrdenarPor == "menos-avaliacoes")">Menos avaliações</option>
+                            </optgroup>
+                            <optgroup label="País">
+                                <option value="pais-az" selected="@(Model.OrdenarPor == "pais-az")">País (A-Z)</option>
+                                <option value="pais-za" selected="@(Model.OrdenarPor == "pais-za")">País (Z-A)</option>
+                            </optgroup>
+                        </select>
+                    </div>
+                </div>
+            </div>
         </form>
     </div>
 </div>
