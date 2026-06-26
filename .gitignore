@@ -5,11 +5,15 @@ riderModule.iml
 /_ReSharper.Caches/
 
 # Ficheiros de configuração com credenciais
+SerEU/appsettings.json
 SerEU/appsettings.Development.json
 SerEU/appsettings.Production.json
 
 # User secrets do .NET
 secrets.json
+
+# IDE
+.idea/
 
 # Base de dados SQLite local (não deve ser versionada)
 app.db
