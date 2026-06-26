@@ -1,6 +1,7 @@
 using SerEU.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 
 namespace SerEU.Data;
 
@@ -14,6 +15,7 @@ public static class DbInitializer
         var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
         var userManager = serviceProvider.GetRequiredService<UserManager<IdentityUser>>();
         var context = serviceProvider.GetRequiredService<ApplicationDbContext>();
+        var configuration = serviceProvider.GetRequiredService<IConfiguration>();
 
         // Aplica migrações pendentes automaticamente (cria BD se não existir)
         await context.Database.MigrateAsync();
@@ -27,21 +29,25 @@ public static class DbInitializer
         }
 
         // --- Criar utilizador Admin ---
-        var adminEmail = "admin@sereu.diogop.eu";
+        var adminEmail = configuration["SeedUsers:Admin:Email"] ?? "admin@sereu.diogop.eu";
+        var adminPassword = configuration["SeedUsers:Admin:Password"] ?? "Admin@1234";
+        
         if (await userManager.FindByEmailAsync(adminEmail) == null)
         {
             var admin = new IdentityUser { UserName = adminEmail, Email = adminEmail, EmailConfirmed = true };
-            var result = await userManager.CreateAsync(admin, "Admin@1234");
+            var result = await userManager.CreateAsync(admin, adminPassword);
             if (result.Succeeded)
                 await userManager.AddToRoleAsync(admin, "Admin");
         }
 
         // --- Criar utilizador comum ---
-        var userEmail = "utilizador@sereu.diogop.eu";
+        var userEmail = configuration["SeedUsers:User:Email"] ?? "utilizador@sereu.diogop.eu";
+        var userPassword = configuration["SeedUsers:User:Password"] ?? "User@1234";
+        
         if (await userManager.FindByEmailAsync(userEmail) == null)
         {
             var user = new IdentityUser { UserName = userEmail, Email = userEmail, EmailConfirmed = true };
-            var result = await userManager.CreateAsync(user, "User@1234");
+            var result = await userManager.CreateAsync(user, userPassword);
             if (result.Succeeded)
                 await userManager.AddToRoleAsync(user, "Utilizador");
         }

@@ -43,7 +43,7 @@ public class MailKitEmailSender(IOptions<EmailSettings> options, ILogger<MailKit
         {
             using var client = new SmtpClient();
             
-            // Determinar o nível de segurança com base em EnableSsl
+            // Determinar o nível de segurança com base em EnableSsl, o proton mail usa STARTTLS
             var secureSocketOptions = _settings.EnableSsl 
                 ? SecureSocketOptions.StartTlsWhenAvailable 
                 : SecureSocketOptions.None;
