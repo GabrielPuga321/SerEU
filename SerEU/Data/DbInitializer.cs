@@ -29,27 +29,33 @@ public static class DbInitializer
         }
 
         // --- Criar utilizador Admin ---
-        var adminEmail = configuration["SeedUsers:Admin:Email"] ?? "admin@sereu.diogop.eu";
-        var adminPassword = configuration["SeedUsers:Admin:Password"] ?? "Admin@1234";
+        var adminEmail = configuration["SeedUsers:Admin:Email"];
+        var adminPassword = configuration["SeedUsers:Admin:Password"];
         
-        if (await userManager.FindByEmailAsync(adminEmail) == null)
+        if (!string.IsNullOrEmpty(adminEmail) && !string.IsNullOrEmpty(adminPassword))
         {
-            var admin = new IdentityUser { UserName = adminEmail, Email = adminEmail, EmailConfirmed = true };
-            var result = await userManager.CreateAsync(admin, adminPassword);
-            if (result.Succeeded)
-                await userManager.AddToRoleAsync(admin, "Admin");
+            if (await userManager.FindByEmailAsync(adminEmail) == null)
+            {
+                var admin = new IdentityUser { UserName = adminEmail, Email = adminEmail, EmailConfirmed = true };
+                var result = await userManager.CreateAsync(admin, adminPassword);
+                if (result.Succeeded)
+                    await userManager.AddToRoleAsync(admin, "Admin");
+            }
         }
 
         // --- Criar utilizador comum ---
-        var userEmail = configuration["SeedUsers:User:Email"] ?? "utilizador@sereu.diogop.eu";
-        var userPassword = configuration["SeedUsers:User:Password"] ?? "User@1234";
+        var userEmail = configuration["SeedUsers:User:Email"];
+        var userPassword = configuration["SeedUsers:User:Password"];
         
-        if (await userManager.FindByEmailAsync(userEmail) == null)
+        if (!string.IsNullOrEmpty(userEmail) && !string.IsNullOrEmpty(userPassword))
         {
-            var user = new IdentityUser { UserName = userEmail, Email = userEmail, EmailConfirmed = true };
-            var result = await userManager.CreateAsync(user, userPassword);
-            if (result.Succeeded)
-                await userManager.AddToRoleAsync(user, "Utilizador");
+            if (await userManager.FindByEmailAsync(userEmail) == null)
+            {
+                var user = new IdentityUser { UserName = userEmail, Email = userEmail, EmailConfirmed = true };
+                var result = await userManager.CreateAsync(user, userPassword);
+                if (result.Succeeded)
+                    await userManager.AddToRoleAsync(user, "Utilizador");
+            }
         }
 
         // --- Categorias iniciais ---
@@ -92,7 +98,9 @@ public static class DbInitializer
         // Seed idempotente: adiciona apenas os serviços que ainda não existem (por nome),
         // permitindo introduzir novos serviços mesmo numa base de dados já existente.
         {
-            var adminUser = await userManager.FindByEmailAsync(adminEmail);
+            var adminUser = !string.IsNullOrEmpty(adminEmail) 
+                ? await userManager.FindByEmailAsync(adminEmail)
+                : null;
             var categorias = context.Categorias.ToList();
             var tags = context.Tags.ToList();
 
