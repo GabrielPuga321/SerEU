@@ -28,7 +28,8 @@ A branch **main** centraliza todo o trabalho integrado.
 ## Pré-requisitos
 
 ### Configurar Utilizadores
-Por defeito, o projeto cria dois utilizadores de teste ao iniciar. **Nunca uses estas credenciais em produção!**
+Por defeito, o projeto cria dois utilizadores de teste ao iniciar. 
+**Credenciais de exemplo, favor mudar em ambiente de produção**
 
 #### Para desenvolvimento (Secret Manager)
 O Secret Manager armazena credenciais localmente sem versionar no Git
