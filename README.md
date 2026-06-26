@@ -27,9 +27,67 @@ A branch **main** centraliza todo o trabalho integrado.
 
 ## Pré-requisitos
 
+### Configurar Utilizadores
+Por defeito, o projeto cria dois utilizadores de teste ao iniciar. **Nunca uses estas credenciais em produção!**
+
+#### Para desenvolvimento (Secret Manager)
+O Secret Manager armazena credenciais localmente sem versionar no Git
+
+##### Inicializar Secret Manager (na pasta SerEU)
+cd SerEU
+dotnet user-secrets init
+
+###### Definir credenciais dos utilizadores seed
+> Admin
+```sh
+dotnet user-secrets set "SeedUsers:Admin:Email" "admin@sereu.diogop.eu"
+dotnet user-secrets set "SeedUsers:Admin:Password" "Admin@1234"
+```
+
+> Utilizador
+```sh
+dotnet user-secrets set "SeedUsers:User:Email" "utilizador@sereu.diogop.eu"
+dotnet user-secrets set "SeedUsers:User:Password" "User@1234"
+```
+
+#### Ou ainda, no ficheiro de configurão
+Pode-se também definir no `appsettings.json` 
+
+```json
+{
+  "SeedUsers": {
+    "Admin": {
+      "Email": "",
+      "Password": ""
+    },
+    "User": {
+      "Email": "", 
+      "Password": ""
+    }
+  }
+}
+```
+
+#### Para produção
+Em produção, define as variáveis de ambiente no servidor:
+
+```bash
+# Unix-like
+export SeedUsers__Admin__Email="admin@teudominio.tld"
+export SeedUsers__Admin__Password="UmaPassword"
+export SeedUsers__User__Email="user@teudominio.tld"
+export SeedUsers__User__Password="OutraPassword"
+
+# Windows (PowerShell)
+$env:SeedUsers__Admin__Email = "admin@teudominio.tld"
+$env:SeedUsers__Admin__Password = "UmaPassword"
+$env:SeedUsers__User__Email = "user@teudominio.tld"
+$env:SeedUsers__User__Password = "OutraPassword"
+```
+
+
 ### Configurar SMTP
 Para que o envio de emails (confirmação de conta, recuperação de palavra-passe) funcione:
-
 
 1. **Copia o ficheiro de exemplo:**
    ```bash
@@ -45,13 +103,6 @@ cd SerEU
 dotnet run
 ```
 
-
-### Utilizadores de teste
-
-| Papel | Email | Password |
-|-------|-------|----------|
-| Admin | admin@sereu.diogop.eu | Admin@1234 |
-| Utilizador | utilizador@sereu.diogop.eu | User@1234 |
 
 ## API REST
 
