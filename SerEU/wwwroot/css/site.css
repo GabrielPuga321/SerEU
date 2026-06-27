@@ -531,6 +531,73 @@ footer.border-top {
 }
 
 /* -------------------------------------------------------------------
+   Filtros avançados / dinâmicos
+   ------------------------------------------------------------------- */
+.filtros-card {
+    border: 1px solid var(--eu-border, #e3e8f0);
+    border-radius: 0.85rem;
+}
+
+.filtros-card .input-group-text,
+.filtros-card .form-control,
+.filtros-card .form-select {
+    border-color: var(--eu-border, #dee2e6);
+}
+
+/* Realça toda a "pílula" de pesquisa quando o input recebe foco */
+.filtro-pesquisa-group:focus-within {
+    box-shadow: 0 0 0 0.2rem rgba(26, 86, 219, 0.15);
+    border-radius: 0.5rem;
+}
+
+.filtro-pesquisa-group:focus-within .input-group-text,
+.filtro-pesquisa-group:focus-within .form-control,
+.filtro-pesquisa-group:focus-within .btn {
+    border-color: var(--eu-primary, #1a56db);
+}
+
+.filtros-card .form-control:focus,
+.filtros-card .form-select:focus {
+    box-shadow: none;
+}
+
+/* Chips de filtros ativos */
+.filtro-chip {
+    background-color: rgba(26, 86, 219, 0.1);
+    color: var(--eu-primary, #1a56db);
+    font-weight: 500;
+    padding: 0.4rem 0.7rem;
+    animation: servicoAparece 0.25s ease both;
+}
+
+.filtro-chip-x {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    background: transparent;
+    color: inherit;
+    opacity: 0.65;
+    padding: 0;
+    line-height: 1;
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+.filtro-chip-x:hover {
+    opacity: 1;
+}
+
+[data-bs-theme="dark"] .filtros-card {
+    border-color: var(--eu-border);
+}
+
+[data-bs-theme="dark"] .filtro-chip {
+    background-color: rgba(77, 124, 240, 0.22);
+    color: #b9ccff;
+}
+
+/* -------------------------------------------------------------------
    Animação de entrada dos serviços (scroll infinito)
    ------------------------------------------------------------------- */
 @keyframes servicoAparece {

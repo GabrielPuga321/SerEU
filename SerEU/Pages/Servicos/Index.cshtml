@@ -12,17 +12,26 @@
     }
 </div>
 
-<!-- Filtros -->
-<div class="card shadow-sm mb-4">
+<!-- Filtros avançados (dinâmicos) -->
+<div class="card shadow-sm mb-4 filtros-card">
     <div class="card-body">
-        <form method="get">
-            <div class="row g-2">
-                <div class="col-md-4">
-                    <input type="text" name="pesquisa" value="@Model.Pesquisa" class="form-control"
-                           placeholder="Pesquisar por nome ou descrição..."/>
+        <form id="form-filtros" method="get" autocomplete="off">
+            <div class="row g-2 align-items-stretch">
+                <div class="col-12 col-lg-5">
+                    <div class="input-group filtro-pesquisa-group">
+                        <span class="input-group-text bg-body border-end-0 text-muted"><i class="bi bi-search"></i></span>
+                        <input type="text" name="pesquisa" id="filtro-pesquisa" value="@Model.Pesquisa"
+                               class="form-control border-start-0 ps-0"
+                               placeholder="Pesquisar por nome, descrição, país, tag..."/>
+                        <button type="button" id="limpar-pesquisa"
+                                class="btn btn-outline-secondary border-start-0 @(string.IsNullOrEmpty(Model.Pesquisa) ? "d-none" : "")"
+                                title="Limpar pesquisa" aria-label="Limpar pesquisa">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    </div>
                 </div>
-                <div class="col-md-3">
-                    <select name="categoriaId" class="form-select">
+                <div class="col-6 col-lg-2">
+                    <select name="categoriaId" id="filtro-categoria" class="form-select">
                         <option value="">Todas as categorias</option>
                         @foreach (var cat in Model.Categorias)
                         {
@@ -30,8 +39,8 @@
                         }
                     </select>
                 </div>
-                <div class="col-md-3">
-                    <select name="tagId" class="form-select">
+                <div class="col-6 col-lg-2">
+                    <select name="tagId" id="filtro-tag" class="form-select">
                         <option value="">Todas as tags</option>
                         @foreach (var tag in Model.Tags)
                         {
@@ -39,40 +48,42 @@
                         }
                     </select>
                 </div>
-                <div class="col-md-2 d-flex gap-2">
-                    <button type="submit" class="btn btn-primary flex-grow-1">
-                        <i class="bi bi-search"></i> Filtrar
-                    </button>
-                    <a asp-page="Index" class="btn btn-outline-secondary">
-                        <i class="bi bi-x-circle"></i>
-                    </a>
+                <div class="col-12 col-lg-3">
+                    <select name="ordenarPor" id="filtro-ordenar" class="form-select">
+                        <optgroup label="Data de Submissão">
+                            <option value="recentes" selected="@(Model.OrdenarPor is null or "" or "recentes")">Mais recentes primeiro</option>
+                            <option value="antigos" selected="@(Model.OrdenarPor == "antigos")">Mais antigos primeiro</option>
+                        </optgroup>
+                        <optgroup label="Nome">
+                            <option value="nome-az" selected="@(Model.OrdenarPor == "nome-az")">Nome (A-Z)</option>
+                            <option value="nome-za" selected="@(Model.OrdenarPor == "nome-za")">Nome (Z-A)</option>
+                        </optgroup>
+                        <optgroup label="Avaliação">
+                            <option value="melhor-avaliado" selected="@(Model.OrdenarPor == "melhor-avaliado")">Melhor avaliação</option>
+                            <option value="pior-avaliado" selected="@(Model.OrdenarPor == "pior-avaliado")">Pior avaliação</option>
+                            <option value="mais-avaliacoes" selected="@(Model.OrdenarPor == "mais-avaliacoes")">Mais avaliações</option>
+                            <option value="menos-avaliacoes" selected="@(Model.OrdenarPor == "menos-avaliacoes")">Menos avaliações</option>
+                        </optgroup>
+                        <optgroup label="País">
+                            <option value="pais-az" selected="@(Model.OrdenarPor == "pais-az")">País (A-Z)</option>
+                            <option value="pais-za" selected="@(Model.OrdenarPor == "pais-za")">País (Z-A)</option>
+                        </optgroup>
+                    </select>
                 </div>
             </div>
-            <div class="row mt-2">
-                <div class="col-md-12">
-                    <div class="d-flex justify-content-end">
-                        <select name="ordenarPor" class="form-select form-select-sm" style="width: 250px;" onchange="this.form.submit()">
-                            <option value="">Ordenar por...</option>
-                            <optgroup label="Data de Submissão">
-                                <option value="recentes" selected="@(Model.OrdenarPor == "recentes")">Mais recentes primeiro</option>
-                                <option value="antigos" selected="@(Model.OrdenarPor == "antigos")">Mais antigos primeiro</option>
-                            </optgroup>
-                            <optgroup label="Nome">
-                                <option value="nome-az" selected="@(Model.OrdenarPor == "nome-az")">Nome (A-Z)</option>
-                                <option value="nome-za" selected="@(Model.OrdenarPor == "nome-za")">Nome (Z-A)</option>
-                            </optgroup>
-                            <optgroup label="Avaliação">
-                                <option value="melhor-avaliado" selected="@(Model.OrdenarPor == "melhor-avaliado")">Melhor avaliação</option>
-                                <option value="pior-avaliado" selected="@(Model.OrdenarPor == "pior-avaliado")">Pior avaliação</option>
-                                <option value="mais-avaliacoes" selected="@(Model.OrdenarPor == "mais-avaliacoes")">Mais avaliações</option>
-                                <option value="menos-avaliacoes" selected="@(Model.OrdenarPor == "menos-avaliacoes")">Menos avaliações</option>
-                            </optgroup>
-                            <optgroup label="País">
-                                <option value="pais-az" selected="@(Model.OrdenarPor == "pais-az")">País (A-Z)</option>
-                                <option value="pais-za" selected="@(Model.OrdenarPor == "pais-za")">País (Z-A)</option>
-                            </optgroup>
-                        </select>
-                    </div>
+
+            <div class="d-flex justify-content-between align-items-center mt-3 flex-wrap gap-2">
+                <div id="chips-filtros" class="d-flex flex-wrap gap-1 align-items-center"></div>
+                <div class="d-flex align-items-center gap-2 ms-auto">
+                    <span id="filtro-spinner" class="spinner-border spinner-border-sm text-primary d-none" role="status">
+                        <span class="visually-hidden">A filtrar...</span>
+                    </span>
+                    <span class="text-muted small text-nowrap" id="resultados-info">
+                        <strong id="resultados-total">@Model.TotalServicos</strong> resultado(s)
+                    </span>
+                    <button type="button" id="limpar-filtros" class="btn btn-sm btn-outline-secondary">
+                        <i class="bi bi-arrow-counterclockwise me-1"></i>Limpar
+                    </button>
                 </div>
             </div>
         </form>
@@ -80,42 +91,46 @@
 </div>
 
 <!-- Resultados -->
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <span class="text-muted">@Model.TotalServicos resultado(s) encontrado(s)</span>
+<div id="grid-servicos" class="row g-3 @(Model.TotalServicos == 0 ? "d-none" : "")"
+     data-pagina="1"
+     data-tem-mais="@Model.TemMais.ToString().ToLowerInvariant()">
+    <partial name="_ServicosLista" model="Model.Servicos"/>
 </div>
 
-@if (Model.TotalServicos == 0)
-{
-    <div class="alert alert-info text-center py-5">
-        <i class="bi bi-search fs-1 d-block mb-2"></i>
-        Nenhum serviço encontrado com os filtros aplicados.
-        <br/>
-        <a asp-page="Index" class="btn btn-outline-primary mt-2">Ver todos os serviços</a>
-    </div>
-}
-else
-{
-    <div id="grid-servicos" class="row g-3"
-         data-pagina="1"
-         data-tem-mais="@Model.TemMais.ToString().ToLowerInvariant()">
-        <partial name="_ServicosLista" model="Model.Servicos"/>
-    </div>
+<div id="sem-resultados" class="alert alert-info text-center py-5 @(Model.TotalServicos == 0 ? "" : "d-none")">
+    <i class="bi bi-search fs-1 d-block mb-2"></i>
+    Nenhum serviço encontrado com os filtros aplicados.
+    <br/>
+    <button type="button" id="ver-todos" class="btn btn-outline-primary mt-2">Ver todos os serviços</button>
+</div>
 
-    <div id="sentinela-servicos" class="text-center py-4">
-        <div id="spinner-servicos" class="spinner-border text-primary d-none" role="status">
-            <span class="visually-hidden">A carregar mais serviços...</span>
-        </div>
-        <div id="fim-servicos" class="text-muted d-none">
-            <i class="bi bi-check2-circle me-1"></i>Chegou ao fim da lista.
-        </div>
+<div id="sentinela-servicos" class="text-center py-4">
+    <div id="spinner-servicos" class="spinner-border text-primary d-none" role="status">
+        <span class="visually-hidden">A carregar mais serviços...</span>
     </div>
-}
+    <div id="fim-servicos" class="text-muted d-none">
+        <i class="bi bi-check2-circle me-1"></i>Chegou ao fim da lista.
+    </div>
+</div>
 
 @section Scripts {
     <script>
         (function () {
             const grid = document.getElementById('grid-servicos');
             if (!grid) return;
+
+            const form = document.getElementById('form-filtros');
+            const inputPesquisa = document.getElementById('filtro-pesquisa');
+            const selCategoria = document.getElementById('filtro-categoria');
+            const selTag = document.getElementById('filtro-tag');
+            const selOrdenar = document.getElementById('filtro-ordenar');
+            const btnLimparPesquisa = document.getElementById('limpar-pesquisa');
+            const btnLimparFiltros = document.getElementById('limpar-filtros');
+            const btnVerTodos = document.getElementById('ver-todos');
+            const chips = document.getElementById('chips-filtros');
+            const filtroSpinner = document.getElementById('filtro-spinner');
+            const totalSpan = document.getElementById('resultados-total');
+            const semResultados = document.getElementById('sem-resultados');
 
             const sentinela = document.getElementById('sentinela-servicos');
             const spinner = document.getElementById('spinner-servicos');
@@ -124,12 +139,9 @@ else
             let pagina = parseInt(grid.dataset.pagina, 10) || 1;
             let temMais = grid.dataset.temMais === 'true';
             let aCarregar = false;
+            let pedidoToken = 0; // ignora respostas fora de ordem
 
-            function mostrarFim() {
-                fim.classList.remove('d-none');
-            }
-
-            // Anima a entrada de um conjunto de cartões, com um ligeiro efeito em cascata.
+            // ---- Animação de entrada dos cartões ----
             function animarCartoes(elementos) {
                 elementos.forEach((el, i) => {
                     el.style.animationDelay = Math.min(i * 60, 400) + 'ms';
@@ -137,29 +149,137 @@ else
                 });
             }
 
-            // Anima os cartões já presentes na primeira página.
-            animarCartoes(Array.from(grid.children));
-
-            if (!temMais) {
-                mostrarFim();
-                return;
+            function mostrarFim(mostrar) {
+                fim.classList.toggle('d-none', !mostrar);
             }
 
+            // ---- Estado dos filtros ----
+            function obterFiltros() {
+                return {
+                    pesquisa: inputPesquisa.value.trim(),
+                    categoriaId: selCategoria.value,
+                    tagId: selTag.value,
+                    ordenarPor: selOrdenar.value
+                };
+            }
+
+            function construirParams(extra) {
+                const f = obterFiltros();
+                const p = new URLSearchParams();
+                if (f.pesquisa) p.set('pesquisa', f.pesquisa);
+                if (f.categoriaId) p.set('categoriaId', f.categoriaId);
+                if (f.tagId) p.set('tagId', f.tagId);
+                if (f.ordenarPor && f.ordenarPor !== 'recentes') p.set('ordenarPor', f.ordenarPor);
+                if (extra) Object.entries(extra).forEach(([k, v]) => p.set(k, v));
+                return p;
+            }
+
+            function atualizarUrl() {
+                const qs = construirParams().toString();
+                history.replaceState(null, '', qs ? `${location.pathname}?${qs}` : location.pathname);
+            }
+
+            // ---- "Chips" dos filtros ativos ----
+            function textoOpcao(select) {
+                const opt = select.options[select.selectedIndex];
+                return opt ? opt.textContent : '';
+            }
+
+            function criarChip(label, onRemover) {
+                const span = document.createElement('span');
+                span.className = 'badge rounded-pill filtro-chip d-inline-flex align-items-center gap-1';
+                span.innerHTML = `<span>${label}</span>`;
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'filtro-chip-x';
+                btn.innerHTML = '<i class="bi bi-x"></i>';
+                btn.setAttribute('aria-label', 'Remover filtro');
+                btn.addEventListener('click', onRemover);
+                span.appendChild(btn);
+                return span;
+            }
+
+            function renderChips() {
+                chips.innerHTML = '';
+                const f = obterFiltros();
+
+                if (f.pesquisa) {
+                    chips.appendChild(criarChip(`<i class="bi bi-search me-1"></i>“${f.pesquisa}”`, () => {
+                        inputPesquisa.value = '';
+                        btnLimparPesquisa.classList.add('d-none');
+                        aplicarFiltros();
+                    }));
+                }
+                if (f.categoriaId) {
+                    chips.appendChild(criarChip(`<i class="bi bi-grid me-1"></i>${textoOpcao(selCategoria)}`, () => {
+                        selCategoria.value = '';
+                        aplicarFiltros();
+                    }));
+                }
+                if (f.tagId) {
+                    chips.appendChild(criarChip(`<i class="bi bi-tag me-1"></i>${textoOpcao(selTag)}`, () => {
+                        selTag.value = '';
+                        aplicarFiltros();
+                    }));
+                }
+                if (f.ordenarPor && f.ordenarPor !== 'recentes') {
+                    chips.appendChild(criarChip(`<i class="bi bi-sort-down me-1"></i>${textoOpcao(selOrdenar)}`, () => {
+                        selOrdenar.value = 'recentes';
+                        aplicarFiltros();
+                    }));
+                }
+            }
+
+            // ---- Aplicar filtros (recarrega a 1.ª página via AJAX) ----
+            async function aplicarFiltros() {
+                btnLimparPesquisa.classList.toggle('d-none', inputPesquisa.value.trim() === '');
+                atualizarUrl();
+                renderChips();
+
+                const token = ++pedidoToken;
+                filtroSpinner.classList.remove('d-none');
+                mostrarFim(false);
+
+                const params = construirParams({ handler: 'Cartoes', pagina: 1 });
+                try {
+                    const resp = await fetch(`${location.pathname}?${params.toString()}`, {
+                        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                    });
+                    if (!resp.ok) throw new Error('Falha ao filtrar');
+                    const html = (await resp.text()).trim();
+                    if (token !== pedidoToken) return; // resposta obsoleta
+
+                    grid.innerHTML = html;
+                    animarCartoes(Array.from(grid.children));
+
+                    const total = parseInt(resp.headers.get('X-Total'), 10) || 0;
+                    if (totalSpan) totalSpan.textContent = total;
+                    temMais = resp.headers.get('X-Tem-Mais') === 'true';
+                    pagina = 1;
+
+                    const vazio = total === 0;
+                    grid.classList.toggle('d-none', vazio);
+                    semResultados.classList.toggle('d-none', !vazio);
+                    mostrarFim(!vazio && !temMais);
+                } catch (e) {
+                    console.error(e);
+                } finally {
+                    if (token === pedidoToken) filtroSpinner.classList.add('d-none');
+                }
+            }
+
+            // ---- Scroll infinito ----
             async function carregarMais() {
                 if (aCarregar || !temMais) return;
                 aCarregar = true;
                 spinner.classList.remove('d-none');
 
-                const params = new URLSearchParams(window.location.search);
-                params.set('handler', 'Cartoes');
-                params.set('pagina', pagina + 1);
-
+                const params = construirParams({ handler: 'Cartoes', pagina: pagina + 1 });
                 try {
-                    const resp = await fetch(`${window.location.pathname}?${params.toString()}`, {
+                    const resp = await fetch(`${location.pathname}?${params.toString()}`, {
                         headers: { 'X-Requested-With': 'XMLHttpRequest' }
                     });
                     if (!resp.ok) throw new Error('Falha ao carregar serviços');
-
                     const html = (await resp.text()).trim();
                     if (html.length > 0) {
                         const antes = grid.children.length;
@@ -170,21 +290,52 @@ else
                     temMais = resp.headers.get('X-Tem-Mais') === 'true' && html.length > 0;
                 } catch (e) {
                     console.error(e);
-                    // permite nova tentativa ao voltar a rolar
                 } finally {
                     aCarregar = false;
                     spinner.classList.add('d-none');
-                    if (!temMais) {
-                        mostrarFim();
-                        observer.disconnect();
-                    }
+                    mostrarFim(!temMais);
                 }
             }
+
+            // ---- Ligações de eventos ----
+            let debounce;
+            inputPesquisa.addEventListener('input', () => {
+                btnLimparPesquisa.classList.toggle('d-none', inputPesquisa.value.trim() === '');
+                clearTimeout(debounce);
+                debounce = setTimeout(aplicarFiltros, 300);
+            });
+            selCategoria.addEventListener('change', aplicarFiltros);
+            selTag.addEventListener('change', aplicarFiltros);
+            selOrdenar.addEventListener('change', aplicarFiltros);
+
+            btnLimparPesquisa.addEventListener('click', () => {
+                inputPesquisa.value = '';
+                btnLimparPesquisa.classList.add('d-none');
+                aplicarFiltros();
+                inputPesquisa.focus();
+            });
+
+            function limparTudo() {
+                inputPesquisa.value = '';
+                selCategoria.value = '';
+                selTag.value = '';
+                selOrdenar.value = 'recentes';
+                aplicarFiltros();
+            }
+            btnLimparFiltros.addEventListener('click', limparTudo);
+            btnVerTodos.addEventListener('click', limparTudo);
+
+            // Evita o submit tradicional (Enter) — filtramos por AJAX.
+            form.addEventListener('submit', (e) => { e.preventDefault(); clearTimeout(debounce); aplicarFiltros(); });
+
+            // ---- Inicialização ----
+            renderChips();
+            animarCartoes(Array.from(grid.children));
+            mostrarFim(!temMais && grid.children.length > 0);
 
             const observer = new IntersectionObserver((entries) => {
                 if (entries[0].isIntersecting) carregarMais();
             }, { rootMargin: '300px' });
-
             observer.observe(sentinela);
         })();
     </script>

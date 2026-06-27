@@ -1,5 +1,6 @@
 using SerEU.Data;
 using SerEU.Models;
+using SerEU.Utils;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
@@ -43,43 +44,33 @@ public class IndexModel(ApplicationDbContext db) : PageModel
         Categorias = await db.Categorias.OrderBy(c => c.Nome).ToListAsync();
         Tags = await db.Tags.OrderBy(t => t.Nome).ToListAsync();
 
-        var query = ConstruirQuery();
-        TotalServicos = await query.CountAsync();
-
         // Carrega apenas a primeira página; o resto entra via scroll infinito (handler Cartoes).
-        Servicos = await ApplyOrdering(query)
-            .ThenBy(s => s.Id)
-            .Take(TamanhoPagina)
-            .ToListAsync();
-
-        TemMais = TotalServicos > Servicos.Count;
+        var (itens, total, temMais) = await ObterPaginaAsync(1);
+        Servicos = itens;
+        TotalServicos = total;
+        TemMais = temMais;
     }
 
     // Devolve um bloco de cartões (HTML parcial) para uma determinada página.
-    // Consumido pelo scroll infinito na página de listagem.
+    // Consumido pelo scroll infinito e pela filtragem dinâmica na página de listagem.
     public async Task<IActionResult> OnGetCartoesAsync(int pagina = 1)
     {
         if (pagina < 1) pagina = 1;
 
         UtilizadorAtualId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-        var query = ConstruirQuery();
-        var total = await query.CountAsync();
+        var (itens, total, temMais) = await ObterPaginaAsync(pagina);
 
-        var servicos = await ApplyOrdering(query)
-            .ThenBy(s => s.Id)
-            .Skip((pagina - 1) * TamanhoPagina)
-            .Take(TamanhoPagina)
-            .ToListAsync();
+        // Cabeçalhos lidos pelo cliente para atualizar o contador e saber se há mais páginas.
+        Response.Headers["X-Total"] = total.ToString();
+        Response.Headers["X-Tem-Mais"] = temMais.ToString().ToLowerInvariant();
 
-        // Informa o cliente se ainda existem mais páginas, evitando um pedido vazio extra.
-        Response.Headers["X-Tem-Mais"] = (pagina * TamanhoPagina < total).ToString().ToLowerInvariant();
-
-        return Partial("_ServicosLista", servicos);
+        return Partial("_ServicosLista", itens);
     }
 
-    // Constrói a query base com os filtros aplicados (sem ordenação nem paginação).
-    private IQueryable<ServicoDigital> ConstruirQuery()
+    // Aplica filtros, ordenação e paginação, devolvendo a página pedida + metadados.
+    // A pesquisa textual é feita em memória para ser tolerante a acentos, maiúsculas e espaços.
+    private async Task<(List<ServicoDigital> itens, int total, bool temMais)> ObterPaginaAsync(int pagina)
     {
         // Utilizadores admin vêem todos os serviços; utilizadores normais vêem só aprovados
         var query = db.ServicosDigitais
@@ -92,16 +83,35 @@ public class IndexModel(ApplicationDbContext db) : PageModel
         if (!User.IsInRole("Admin"))
             query = query.Where(s => s.Aprovado);
 
-        if (!string.IsNullOrWhiteSpace(Pesquisa))
-            query = query.Where(s => s.Nome.Contains(Pesquisa) || s.Descricao.Contains(Pesquisa));
-
         if (CategoriaId.HasValue)
             query = query.Where(s => s.CategoriaId == CategoriaId.Value);
 
         if (TagId.HasValue)
             query = query.Where(s => s.Tags.Any(t => t.Id == TagId.Value));
 
-        return query;
+        // Ordena na BD (inclui critérios por avaliação) e materializa.
+        var lista = await ApplyOrdering(query).ThenBy(s => s.Id).ToListAsync();
+
+        // Pesquisa tolerante: cada palavra tem de aparecer em nome/descrição/país/categoria/tags.
+        var tokens = TextoHelper.Tokenizar(Pesquisa);
+        if (tokens.Length > 0)
+        {
+            lista = lista.Where(s =>
+            {
+                var alvo = TextoHelper.Normalizar(
+                    $"{s.Nome} {s.Descricao} {s.Pais} {s.Categoria.Nome} " +
+                    string.Join(' ', s.Tags.Select(t => t.Nome)));
+                return tokens.All(token => alvo.Contains(token));
+            }).ToList();
+        }
+
+        var total = lista.Count;
+        var itens = lista
+            .Skip((pagina - 1) * TamanhoPagina)
+            .Take(TamanhoPagina)
+            .ToList();
+
+        return (itens, total, pagina * TamanhoPagina < total);
     }
 
     private IOrderedQueryable<ServicoDigital> ApplyOrdering(IQueryable<ServicoDigital> query)
