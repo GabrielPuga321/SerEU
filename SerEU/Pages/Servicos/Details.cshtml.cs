@@ -14,6 +14,10 @@ public class DetailsModel(ApplicationDbContext db) : PageModel
     public string? UtilizadorAtualId { get; set; }
     public bool JaAvaliou { get; set; }
 
+    // Avaliação que o utilizador atual já deixou neste serviço (se existir).
+    // Serve para pré-preencher o formulário de edição.
+    public Avaliacao? MinhaAvaliacao { get; set; }
+
     [BindProperty]
     public Avaliacao NovaAvaliacao { get; set; } = new();
 
@@ -33,8 +37,14 @@ public class DetailsModel(ApplicationDbContext db) : PageModel
         if (!Servico.Aprovado && !User.IsInRole("Admin") && Servico.UtilizadorId != UtilizadorAtualId)
             return Forbid();
 
-        JaAvaliou = UtilizadorAtualId != null &&
-                    Servico.Avaliacoes.Any(a => a.UtilizadorId == UtilizadorAtualId);
+        MinhaAvaliacao = UtilizadorAtualId == null
+            ? null
+            : Servico.Avaliacoes.FirstOrDefault(a => a.UtilizadorId == UtilizadorAtualId);
+        JaAvaliou = MinhaAvaliacao != null;
+
+        // Pré-preencher o formulário com a avaliação existente para permitir a edição.
+        if (MinhaAvaliacao != null)
+            NovaAvaliacao = MinhaAvaliacao;
 
         ServicosRelacionados = await db.ServicosDigitais
             .Where(s => s.CategoriaId == Servico.CategoriaId && s.Id != id && s.Aprovado)
@@ -92,6 +102,42 @@ public class DetailsModel(ApplicationDbContext db) : PageModel
 
         TempData["Sucesso"] = "Avaliação submetida com sucesso!";
         return RedirectToPage(new { id = NovaAvaliacao.ServicoDigitalId });
+    }
+
+    public async Task<IActionResult> OnPostEditarAvaliacaoAsync()
+    {
+        UtilizadorAtualId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (UtilizadorAtualId == null) return Challenge();
+
+        ModelState.Remove("NovaAvaliacao.ServicoDigital");
+        ModelState.Remove("NovaAvaliacao.Utilizador");
+
+        var avaliacao = await db.Avaliacoes.FindAsync(NovaAvaliacao.Id);
+        if (avaliacao == null) return NotFound();
+
+        // Só o autor da avaliação (ou um admin) a pode editar
+        if (avaliacao.UtilizadorId != UtilizadorAtualId && !User.IsInRole("Admin"))
+            return Forbid();
+
+        if (!ModelState.IsValid)
+        {
+            Servico = await db.ServicosDigitais
+                .Include(s => s.Categoria).Include(s => s.Tags)
+                .Include(s => s.Avaliacoes).ThenInclude(a => a.Utilizador)
+                .FirstOrDefaultAsync(s => s.Id == avaliacao.ServicoDigitalId);
+            MinhaAvaliacao = avaliacao;
+            JaAvaliou = true;
+            return Page();
+        }
+
+        // Atualizar apenas os campos editáveis; a data passa a refletir a alteração
+        avaliacao.Nota = NovaAvaliacao.Nota;
+        avaliacao.Comentario = NovaAvaliacao.Comentario;
+        avaliacao.Data = DateTime.UtcNow;
+        await db.SaveChangesAsync();
+
+        TempData["Sucesso"] = "Avaliação atualizada com sucesso!";
+        return RedirectToPage(new { id = avaliacao.ServicoDigitalId });
     }
 
     public async Task<IActionResult> OnPostEliminarAvaliacaoAsync(int avaliacaoId)

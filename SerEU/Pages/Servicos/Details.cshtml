@@ -10,14 +10,6 @@
     return;
 }
 
-<nav aria-label="breadcrumb" class="mb-3">
-    <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a asp-page="/Index">Início</a></li>
-        <li class="breadcrumb-item"><a asp-page="Index">Serviços</a></li>
-        <li class="breadcrumb-item active">@Model.Servico.Nome</li>
-    </ol>
-</nav>
-
 <div class="row g-4">
     <!-- Coluna principal -->
     <div class="col-lg-8">
@@ -115,10 +107,37 @@
                         </div>
                     </div>
                 }
-                else if (Model.JaAvaliou)
+                else if (Model.MinhaAvaliacao != null)
                 {
-                    <div class="alert alert-info small">
-                        <i class="bi bi-info-circle me-1"></i> Já avaliou este serviço.
+                    <div class="card bg-light border-0 mb-4">
+                        <div class="card-body">
+                            <h5><i class="bi bi-pencil-square me-1"></i>Editar a sua avaliação</h5>
+                            <p class="text-muted small mb-3">Mudou de ideias? Atualize a sua nota ou comentário.</p>
+                            <form method="post" asp-page-handler="EditarAvaliacao">
+                                <input type="hidden" asp-for="NovaAvaliacao.Id" value="@Model.MinhaAvaliacao.Id"/>
+                                <input type="hidden" asp-for="NovaAvaliacao.ServicoDigitalId" value="@Model.Servico.Id"/>
+                                <div class="mb-3">
+                                    <label asp-for="NovaAvaliacao.Nota" class="form-label fw-bold">Nota (1-5)</label>
+                                    <select asp-for="NovaAvaliacao.Nota" class="form-select" style="max-width:120px">
+                                        <option value="5">⭐⭐⭐⭐⭐ (5)</option>
+                                        <option value="4">⭐⭐⭐⭐ (4)</option>
+                                        <option value="3">⭐⭐⭐ (3)</option>
+                                        <option value="2">⭐⭐ (2)</option>
+                                        <option value="1">⭐ (1)</option>
+                                    </select>
+                                    <span asp-validation-for="NovaAvaliacao.Nota" class="text-danger small"></span>
+                                </div>
+                                <div class="mb-3">
+                                    <label asp-for="NovaAvaliacao.Comentario" class="form-label fw-bold">Comentário (opcional)</label>
+                                    <textarea asp-for="NovaAvaliacao.Comentario" class="form-control" rows="3"
+                                              placeholder="Partilhe a sua experiência com este serviço..."></textarea>
+                                    <span asp-validation-for="NovaAvaliacao.Comentario" class="text-danger small"></span>
+                                </div>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-check-lg me-1"></i>Atualizar Avaliação
+                                </button>
+                            </form>
+                        </div>
                     </div>
                 }
                 else if (!User.Identity?.IsAuthenticated ?? true)
@@ -153,8 +172,9 @@
                                         {
                                             <form method="post" asp-page-handler="EliminarAvaliacao" class="d-inline">
                                                 <input type="hidden" name="avaliacaoId" value="@av.Id"/>
-                                                <button type="submit" class="btn btn-link btn-sm text-danger p-0"
-                                                        onclick="return confirm('Eliminar esta avaliação?')">
+                                                <button type="button" class="btn btn-link btn-sm text-danger p-0"
+                                                        data-bs-toggle="modal" data-bs-target="#confirmarEliminarModal"
+                                                        title="Eliminar avaliação">
                                                     <i class="bi bi-trash"></i>
                                                 </button>
                                             </form>
@@ -180,9 +200,9 @@
                 <h5 class="card-title mb-3">Informação</h5>
                 <ul class="list-unstyled">
                     <li class="mb-2">
-                        <i class="bi bi-link-45deg text-primary me-2"></i>
-                        <a href="@Model.Servico.Url" target="_blank" rel="noopener" class="text-truncate d-inline-block" style="max-width:200px">
-                            Visitar Website
+                        <a href="@Model.Servico.Url" target="_blank" rel="noopener" class="link-externo">
+                            <i class="bi bi-box-arrow-up-right"></i>
+                            <span class="link-externo-texto">Visitar Website</span>
                         </a>
                     </li>
                     @if (!string.IsNullOrEmpty(Model.Servico.Pais))
@@ -242,6 +262,45 @@
     </div>
 </div>
 
+<!-- Modal de confirmação para eliminar avaliação -->
+<div class="modal fade" id="confirmarEliminarModal" tabindex="-1" aria-labelledby="confirmarEliminarLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title" id="confirmarEliminarLabel">
+                    <i class="bi bi-exclamation-triangle-fill text-danger me-2"></i>Eliminar avaliação
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body">
+                Tem a certeza de que pretende eliminar esta avaliação? Esta ação não pode ser anulada.
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-lg me-1"></i>Cancelar
+                </button>
+                <button type="button" class="btn btn-danger" id="btnConfirmarEliminar">
+                    <i class="bi bi-trash me-1"></i>Eliminar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     <partial name="_ValidationScriptsPartial"/>
+    <script>
+        // Um único modal serve todas as avaliações: ao abrir, memoriza o formulário
+        // do botão que o disparou e submete-o se o utilizador confirmar.
+        (function () {
+            const modal = document.getElementById('confirmarEliminarModal');
+            let formAlvo = null;
+            modal.addEventListener('show.bs.modal', function (e) {
+                formAlvo = e.relatedTarget ? e.relatedTarget.closest('form') : null;
+            });
+            document.getElementById('btnConfirmarEliminar').addEventListener('click', function () {
+                if (formAlvo) formAlvo.submit();
+            });
+        })();
+    </script>
 }
