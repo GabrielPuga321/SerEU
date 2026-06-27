@@ -32,6 +32,13 @@ public class EditModel(ApplicationDbContext db) : PageModel
         if (Servico == null) return NotFound();
         if (Servico.UtilizadorId != utilizadorId && !User.IsInRole("Admin")) return Forbid();
 
+        // Após a aprovação, o autor já não pode editar o serviço (apenas administradores).
+        if (Servico.Aprovado && !User.IsInRole("Admin"))
+        {
+            TempData["Aviso"] = "Este serviço já foi aprovado e não pode mais ser editado.";
+            return RedirectToPage("Details", new { id });
+        }
+
         TagsDoServico = Servico.Tags.Select(t => t.Id).ToList();
         await CarregarDadosFormulario();
         return Page();
@@ -46,6 +53,13 @@ public class EditModel(ApplicationDbContext db) : PageModel
 
         if (servicoOriginal == null) return NotFound();
         if (servicoOriginal.UtilizadorId != utilizadorId && !User.IsInRole("Admin")) return Forbid();
+
+        // Após a aprovação, o autor já não pode editar o serviço (apenas administradores).
+        if (servicoOriginal.Aprovado && !User.IsInRole("Admin"))
+        {
+            TempData["Aviso"] = "Este serviço já foi aprovado e não pode mais ser editado.";
+            return RedirectToPage("Details", new { id = servicoOriginal.Id });
+        }
 
         ModelState.Remove("Servico.Categoria");
 

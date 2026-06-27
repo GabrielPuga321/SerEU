@@ -11,6 +11,20 @@
     {
         aprovacoesPendentes = await Db.ServicosDigitais.CountAsync(s => !s.Aprovado);
     }
+
+    // Notificações pessoais do utilizador autenticado (aprovação/rejeição de serviços).
+    var minhasNotificacoes = new List<SerEU.Models.Notificacao>();
+    var notificacoesNaoLidas = 0;
+    if (User.Identity?.IsAuthenticated == true)
+    {
+        var meuId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        minhasNotificacoes = await Db.Notificacoes
+            .Where(n => n.UtilizadorId == meuId)
+            .OrderByDescending(n => n.Data)
+            .Take(20)
+            .ToListAsync();
+        notificacoesNaoLidas = minhasNotificacoes.Count(n => !n.Lida);
+    }
 }
 <!DOCTYPE html>
 <html lang="pt">
@@ -110,13 +124,48 @@
                                   id="badge-pendentes">@aprovacoesPendentes</span>
                         </a>
                     }
-                    <!-- Notificações SignalR -->
+                    <!-- Notificações SignalR (broadcast: novo serviço aprovado) -->
                     <div id="notificacao-container" class="position-relative" style="display:none">
                         <button class="btn btn-outline-light btn-sm" type="button" id="btnNotificacoes">
-                            <i class="bi bi-bell-fill"></i>
+                            <i class="bi bi-megaphone"></i>
                             <span class="badge bg-danger" id="badge-count">0</span>
                         </button>
                     </div>
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        <!-- Notificações pessoais do utilizador -->
+                        <div class="dropdown">
+                            <button class="btn btn-outline-light btn-sm position-relative" type="button"
+                                    id="btnNotificacoesPessoais" data-bs-toggle="dropdown" data-bs-auto-close="outside"
+                                    aria-expanded="false" title="Notificações" aria-label="Notificações">
+                                <i class="bi bi-bell-fill"></i>
+                                <span class="badge rounded-pill bg-danger position-absolute top-0 start-100 translate-middle @(notificacoesNaoLidas == 0 ? "d-none" : "")"
+                                      id="badge-notificacoes-pessoais">@notificacoesNaoLidas</span>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end shadow" id="lista-notificacoes"
+                                style="min-width:330px; max-height:420px; overflow-y:auto"
+                                aria-labelledby="btnNotificacoesPessoais">
+                                <li><h6 class="dropdown-header"><i class="bi bi-bell me-1"></i>Notificações</h6></li>
+                                @if (!minhasNotificacoes.Any())
+                                {
+                                    <li><span class="dropdown-item-text text-muted small" id="notif-vazio">Não tem notificações.</span></li>
+                                }
+                                else
+                                {
+                                    foreach (var n in minhasNotificacoes)
+                                    {
+                                        <li>
+                                            <div class="dropdown-item-text small @(n.Lida ? "" : "fw-semibold")" style="white-space:normal">
+                                                <i class="bi @(n.Tipo == "sucesso" ? "bi-check-circle text-success" : n.Tipo == "erro" ? "bi-x-circle text-danger" : "bi-info-circle text-primary") me-1"></i>
+                                                @n.Mensagem
+                                                <div class="text-muted" style="font-size:0.7rem">@n.Data.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</div>
+                                            </div>
+                                        </li>
+                                    }
+                                }
+                            </ul>
+                        </div>
+                    }
                     <partial name="_LoginPartial"/>
                 </div>
             </div>
@@ -131,6 +180,13 @@
             <div class="toast-body" id="toast-mensagem">
                 <i class="bi bi-check-circle me-1"></i> Novo serviço aprovado!
             </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    </div>
+    <!-- Toast de notificação pessoal (serviço do utilizador aprovado/rejeitado) -->
+    <div id="toastPessoal" class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+            <div class="toast-body" id="toast-pessoal-mensagem"></div>
             <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
         </div>
     </div>
@@ -241,6 +297,65 @@
     connection.on("AprovacoesAtualizadas", function (totalPendentes) {
         atualizarBadgePendentes(totalPendentes);
     });
+
+    // ===== Notificações pessoais (o serviço do utilizador foi aprovado/rejeitado) =====
+    (function () {
+        const btn = document.getElementById("btnNotificacoesPessoais");
+        const badge = document.getElementById("badge-notificacoes-pessoais");
+        const lista = document.getElementById("lista-notificacoes");
+
+        function iconePorTipo(tipo) {
+            if (tipo === "sucesso") return '<i class="bi bi-check-circle text-success me-1"></i>';
+            if (tipo === "erro") return '<i class="bi bi-x-circle text-danger me-1"></i>';
+            return '<i class="bi bi-info-circle text-primary me-1"></i>';
+        }
+
+        function atualizarBadgePessoal(naoLidas) {
+            if (!badge) return;
+            badge.textContent = naoLidas;
+            badge.classList.toggle("d-none", !naoLidas || naoLidas <= 0);
+        }
+
+        // Ao abrir o menu, marca as notificações como lidas.
+        if (btn) {
+            btn.addEventListener("click", function () {
+                if (badge && !badge.classList.contains("d-none")) {
+                    fetch("/api/notificacoes/marcar-lidas", {
+                        method: "POST",
+                        headers: { "X-Requested-With": "XMLHttpRequest" }
+                    }).then(() => atualizarBadgePessoal(0)).catch(err => console.error(err));
+                }
+            });
+        }
+
+        connection.on("NotificacaoPessoal", function (mensagem, tipo, naoLidas) {
+            atualizarBadgePessoal(naoLidas);
+
+            // Insere a nova notificação no topo da lista do dropdown.
+            if (lista) {
+                const vazio = document.getElementById("notif-vazio");
+                if (vazio) vazio.closest("li").remove();
+
+                const li = document.createElement("li");
+                li.innerHTML = `<div class="dropdown-item-text small fw-semibold" style="white-space:normal">`
+                    + `${iconePorTipo(tipo)}${mensagem}`
+                    + `<div class="text-muted" style="font-size:0.7rem">agora mesmo</div></div>`;
+
+                const header = lista.querySelector(".dropdown-header");
+                if (header) header.closest("li").after(li); else lista.prepend(li);
+            }
+
+            // Mostra um toast.
+            const toastEl = document.getElementById("toastPessoal");
+            const corpo = document.getElementById("toast-pessoal-mensagem");
+            if (toastEl && corpo) {
+                toastEl.classList.remove("bg-success", "bg-danger");
+                toastEl.classList.add(tipo === "erro" ? "bg-danger" : "bg-success");
+                corpo.innerHTML = `${iconePorTipo(tipo)}${mensagem}`;
+                new bootstrap.Toast(toastEl).show();
+            }
+        });
+    })();
 
     connection.start().catch(err => console.error("Erro SignalR:", err.toString()));
 </script>

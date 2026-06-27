@@ -10,6 +10,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<ServicoDigital> ServicosDigitais { get; set; }
     public DbSet<Tag> Tags { get; set; }
     public DbSet<Avaliacao> Avaliacoes { get; set; }
+    public DbSet<Notificacao> Notificacoes { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -34,5 +35,15 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             .WithMany(s => s.Avaliacoes)
             .HasForeignKey(a => a.ServicoDigitalId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        // Relação muitos-para-um: Notificacao -> Utilizador (elimina notificações ao eliminar utilizador)
+        builder.Entity<Notificacao>()
+            .HasOne(n => n.Utilizador)
+            .WithMany()
+            .HasForeignKey(n => n.UtilizadorId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<Notificacao>()
+            .HasIndex(n => new { n.UtilizadorId, n.Lida });
     }
 }

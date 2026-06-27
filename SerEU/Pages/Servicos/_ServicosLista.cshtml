@@ -52,7 +52,7 @@
                 </small>
                 <div class="d-flex gap-1">
                     <a asp-page="Details" asp-route-id="@servico.Id" class="btn btn-primary btn-sm">Ver</a>
-                    @if (User.IsInRole("Admin") || servico.UtilizadorId == utilizadorAtualId)
+                    @if (User.IsInRole("Admin") || (servico.UtilizadorId == utilizadorAtualId && !servico.Aprovado))
                     {
                         <a asp-page="Edit" asp-route-id="@servico.Id" class="btn btn-outline-secondary btn-sm">
                             <i class="bi bi-pencil"></i>

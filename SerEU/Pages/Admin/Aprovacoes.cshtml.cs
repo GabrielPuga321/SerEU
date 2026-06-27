@@ -39,6 +39,11 @@ public class AprovacoesModel(ApplicationDbContext db, IHubContext<NotificacoesHu
         // Notificar todos os clientes via SignalR que um novo serviço foi aprovado
         await hubContext.Clients.All.SendAsync("NovoServicoAprovado", servico.Nome);
 
+        // Notificar pessoalmente o autor do serviço (persistido + tempo real)
+        await NotificarAutorAsync(servico.UtilizadorId,
+            $"O seu serviço '{servico.Nome}' foi aprovado e já está publicado. 🎉",
+            "sucesso");
+
         // Atualizar o contador de aprovações pendentes nos administradores
         var totalPendentes = await db.ServicosDigitais.CountAsync(s => !s.Aprovado);
         await hubContext.Clients.Group(NotificacoesHub.GrupoAdministradores)
@@ -46,5 +51,24 @@ public class AprovacoesModel(ApplicationDbContext db, IHubContext<NotificacoesHu
 
         TempData["Sucesso"] = $"Serviço '{servico.Nome}' aprovado e publicado com sucesso!";
         return RedirectToPage();
+    }
+
+    // Cria uma notificação pessoal persistida para o autor e, se estiver online, envia-a em tempo real.
+    private async Task NotificarAutorAsync(string? autorId, string mensagem, string tipo)
+    {
+        if (string.IsNullOrEmpty(autorId)) return;
+
+        var notificacao = new Notificacao
+        {
+            UtilizadorId = autorId,
+            Mensagem = mensagem,
+            Tipo = tipo
+        };
+        db.Notificacoes.Add(notificacao);
+        await db.SaveChangesAsync();
+
+        var naoLidas = await db.Notificacoes.CountAsync(n => n.UtilizadorId == autorId && !n.Lida);
+        await hubContext.Clients.User(autorId)
+            .SendAsync("NotificacaoPessoal", mensagem, tipo, naoLidas);
     }
 }
