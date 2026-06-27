@@ -29,6 +29,7 @@ public class DetailsModel(ApplicationDbContext db) : PageModel
             .Include(s => s.Categoria)
             .Include(s => s.Tags)
             .Include(s => s.Avaliacoes).ThenInclude(a => a.Utilizador)
+            .AsSplitQuery()
             .FirstOrDefaultAsync(s => s.Id == id);
 
         if (Servico == null) return NotFound();
@@ -91,6 +92,7 @@ public class DetailsModel(ApplicationDbContext db) : PageModel
             Servico = await db.ServicosDigitais
                 .Include(s => s.Categoria).Include(s => s.Tags)
                 .Include(s => s.Avaliacoes).ThenInclude(a => a.Utilizador)
+                .AsSplitQuery()
                 .FirstOrDefaultAsync(s => s.Id == NovaAvaliacao.ServicoDigitalId);
             return Page();
         }
