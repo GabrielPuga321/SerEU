@@ -507,6 +507,25 @@ footer.border-top {
     background-color: var(--eu-surface) !important;
 }
 
+[data-bs-theme="dark"] .bg-white {
+    background-color: var(--eu-surface) !important;
+    color: var(--eu-ink) !important;
+}
+
+[data-bs-theme="dark"] .card-header {
+    border-bottom-color: var(--eu-border);
+}
+
+[data-bs-theme="dark"] .list-group-item {
+    background-color: var(--eu-surface);
+    border-color: var(--eu-border);
+    color: var(--eu-ink);
+}
+
+[data-bs-theme="dark"] .border-bottom {
+    border-bottom-color: var(--eu-border) !important;
+}
+
 [data-bs-theme="dark"] .card-categoria .text-dark {
     color: var(--eu-ink) !important;
 }
