@@ -29,6 +29,7 @@ public class ServicosApiController(ApplicationDbContext db) : ControllerBase
             .Include(s => s.Categoria)
             .Include(s => s.Tags)
             .Include(s => s.Avaliacoes)
+            .AsSplitQuery()
             .AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(pesquisa))
@@ -67,6 +68,7 @@ public class ServicosApiController(ApplicationDbContext db) : ControllerBase
             .Include(s => s.Categoria)
             .Include(s => s.Tags)
             .Include(s => s.Avaliacoes)
+            .AsSplitQuery()
             .Select(s => new
             {
                 s.Id,
