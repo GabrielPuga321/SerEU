@@ -81,10 +81,10 @@
 
 <!-- Resultados -->
 <div class="d-flex justify-content-between align-items-center mb-3">
-    <span class="text-muted">@Model.Servicos.Count resultado(s) encontrado(s)</span>
+    <span class="text-muted">@Model.TotalServicos resultado(s) encontrado(s)</span>
 </div>
 
-@if (!Model.Servicos.Any())
+@if (Model.TotalServicos == 0)
 {
     <div class="alert alert-info text-center py-5">
         <i class="bi bi-search fs-1 d-block mb-2"></i>
@@ -95,72 +95,97 @@
 }
 else
 {
-    <div class="row g-3">
-        @foreach (var servico in Model.Servicos)
-        {
-            <div class="col-md-6 col-lg-4">
-                <div class="card h-100 shadow-sm border-0 card-servico">
-                    <div class="card-body">
-                        <div class="d-flex align-items-start gap-3 mb-2">
-                            @if (!string.IsNullOrEmpty(servico.LogotipoUrl))
-                            {
-                                <img src="@servico.LogotipoUrl" alt="@servico.Nome" class="rounded"
-                                     style="width:48px;height:48px;object-fit:contain" onerror="this.style.display='none'"/>
-                            }
-                            else
-                            {
-                                <div class="bg-primary text-white rounded d-flex align-items-center justify-content-center flex-shrink-0"
-                                     style="width:48px;height:48px;font-size:1.5rem">
-                                    <i class="bi @(servico.Categoria.Icone ?? "bi-app")"></i>
-                                </div>
-                            }
-                            <div class="min-w-0">
-                                <h5 class="card-title mb-1 text-truncate">@servico.Nome</h5>
-                                <div class="d-flex flex-wrap gap-1">
-                                    <span class="badge bg-secondary">@servico.Categoria.Nome</span>
-                                    @if (!string.IsNullOrEmpty(servico.Pais))
-                                    {
-                                        <span class="badge bg-light text-dark border">
-                                            <i class="bi bi-geo-alt me-1"></i>@servico.Pais
-                                        </span>
-                                    }
-                                </div>
-                            </div>
-                        </div>
-                        <p class="card-text text-muted small">
-                            @(servico.Descricao.Length > 120 ? servico.Descricao[..120] + "…" : servico.Descricao)
-                        </p>
-                        <div class="d-flex flex-wrap gap-1">
-                            @foreach (var tag in servico.Tags.Take(4))
-                            {
-                                <span class="badge bg-light text-dark border small">@tag.Nome</span>
-                            }
-                        </div>
-                    </div>
-                    <div class="card-footer bg-transparent border-0 d-flex justify-content-between align-items-center">
-                        <small class="text-muted">
-                            <i class="bi bi-star-fill text-warning me-1"></i>
-                            @(servico.MediaAvaliacoes > 0 ? servico.MediaAvaliacoes.ToString("F1") : "—")
-                            (@servico.TotalAvaliacoes avaliações)
-                        </small>
-                        <div class="d-flex gap-1">
-                            <a asp-page="Details" asp-route-id="@servico.Id" class="btn btn-primary btn-sm">Ver</a>
-                            @if (User.IsInRole("Admin") || servico.UtilizadorId == Model.UtilizadorAtualId)
-                            {
-                                <a asp-page="Edit" asp-route-id="@servico.Id" class="btn btn-outline-secondary btn-sm">
-                                    <i class="bi bi-pencil"></i>
-                                </a>
-                            }
-                            @if (User.IsInRole("Admin"))
-                            {
-                                <a asp-page="Delete" asp-route-id="@servico.Id" class="btn btn-outline-danger btn-sm">
-                                    <i class="bi bi-trash"></i>
-                                </a>
-                            }
-                        </div>
-                    </div>
-                </div>
-            </div>
-        }
+    <div id="grid-servicos" class="row g-3"
+         data-pagina="1"
+         data-tem-mais="@Model.TemMais.ToString().ToLowerInvariant()">
+        <partial name="_ServicosLista" model="Model.Servicos"/>
     </div>
+
+    <div id="sentinela-servicos" class="text-center py-4">
+        <div id="spinner-servicos" class="spinner-border text-primary d-none" role="status">
+            <span class="visually-hidden">A carregar mais serviços...</span>
+        </div>
+        <div id="fim-servicos" class="text-muted d-none">
+            <i class="bi bi-check2-circle me-1"></i>Chegou ao fim da lista.
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <script>
+        (function () {
+            const grid = document.getElementById('grid-servicos');
+            if (!grid) return;
+
+            const sentinela = document.getElementById('sentinela-servicos');
+            const spinner = document.getElementById('spinner-servicos');
+            const fim = document.getElementById('fim-servicos');
+
+            let pagina = parseInt(grid.dataset.pagina, 10) || 1;
+            let temMais = grid.dataset.temMais === 'true';
+            let aCarregar = false;
+
+            function mostrarFim() {
+                fim.classList.remove('d-none');
+            }
+
+            // Anima a entrada de um conjunto de cartões, com um ligeiro efeito em cascata.
+            function animarCartoes(elementos) {
+                elementos.forEach((el, i) => {
+                    el.style.animationDelay = Math.min(i * 60, 400) + 'ms';
+                    el.classList.add('servico-aparece');
+                });
+            }
+
+            // Anima os cartões já presentes na primeira página.
+            animarCartoes(Array.from(grid.children));
+
+            if (!temMais) {
+                mostrarFim();
+                return;
+            }
+
+            async function carregarMais() {
+                if (aCarregar || !temMais) return;
+                aCarregar = true;
+                spinner.classList.remove('d-none');
+
+                const params = new URLSearchParams(window.location.search);
+                params.set('handler', 'Cartoes');
+                params.set('pagina', pagina + 1);
+
+                try {
+                    const resp = await fetch(`${window.location.pathname}?${params.toString()}`, {
+                        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                    });
+                    if (!resp.ok) throw new Error('Falha ao carregar serviços');
+
+                    const html = (await resp.text()).trim();
+                    if (html.length > 0) {
+                        const antes = grid.children.length;
+                        grid.insertAdjacentHTML('beforeend', html);
+                        animarCartoes(Array.from(grid.children).slice(antes));
+                        pagina += 1;
+                    }
+                    temMais = resp.headers.get('X-Tem-Mais') === 'true' && html.length > 0;
+                } catch (e) {
+                    console.error(e);
+                    // permite nova tentativa ao voltar a rolar
+                } finally {
+                    aCarregar = false;
+                    spinner.classList.add('d-none');
+                    if (!temMais) {
+                        mostrarFim();
+                        observer.disconnect();
+                    }
+                }
+            }
+
+            const observer = new IntersectionObserver((entries) => {
+                if (entries[0].isIntersecting) carregarMais();
+            }, { rootMargin: '300px' });
+
+            observer.observe(sentinela);
+        })();
+    </script>
 }

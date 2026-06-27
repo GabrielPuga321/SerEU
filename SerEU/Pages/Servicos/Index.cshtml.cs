@@ -9,9 +9,18 @@ namespace SerEU.Pages.Servicos;
 
 public class IndexModel(ApplicationDbContext db) : PageModel
 {
+    // Número de serviços carregados por "página" no scroll infinito.
+    public const int TamanhoPagina = 9;
+
     public List<ServicoDigital> Servicos { get; set; } = [];
     public List<Categoria> Categorias { get; set; } = [];
     public List<Tag> Tags { get; set; } = [];
+
+    // Total de serviços que correspondem aos filtros (todas as páginas).
+    public int TotalServicos { get; set; }
+
+    // Indica se ainda há mais serviços para carregar para além da primeira página.
+    public bool TemMais { get; set; }
 
     [BindProperty(SupportsGet = true)]
     public string? Pesquisa { get; set; }
@@ -34,6 +43,44 @@ public class IndexModel(ApplicationDbContext db) : PageModel
         Categorias = await db.Categorias.OrderBy(c => c.Nome).ToListAsync();
         Tags = await db.Tags.OrderBy(t => t.Nome).ToListAsync();
 
+        var query = ConstruirQuery();
+        TotalServicos = await query.CountAsync();
+
+        // Carrega apenas a primeira página; o resto entra via scroll infinito (handler Cartoes).
+        Servicos = await ApplyOrdering(query)
+            .ThenBy(s => s.Id)
+            .Take(TamanhoPagina)
+            .ToListAsync();
+
+        TemMais = TotalServicos > Servicos.Count;
+    }
+
+    // Devolve um bloco de cartões (HTML parcial) para uma determinada página.
+    // Consumido pelo scroll infinito na página de listagem.
+    public async Task<IActionResult> OnGetCartoesAsync(int pagina = 1)
+    {
+        if (pagina < 1) pagina = 1;
+
+        UtilizadorAtualId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        var query = ConstruirQuery();
+        var total = await query.CountAsync();
+
+        var servicos = await ApplyOrdering(query)
+            .ThenBy(s => s.Id)
+            .Skip((pagina - 1) * TamanhoPagina)
+            .Take(TamanhoPagina)
+            .ToListAsync();
+
+        // Informa o cliente se ainda existem mais páginas, evitando um pedido vazio extra.
+        Response.Headers["X-Tem-Mais"] = (pagina * TamanhoPagina < total).ToString().ToLowerInvariant();
+
+        return Partial("_ServicosLista", servicos);
+    }
+
+    // Constrói a query base com os filtros aplicados (sem ordenação nem paginação).
+    private IQueryable<ServicoDigital> ConstruirQuery()
+    {
         // Utilizadores admin vêem todos os serviços; utilizadores normais vêem só aprovados
         var query = db.ServicosDigitais
             .Include(s => s.Categoria)
@@ -54,8 +101,7 @@ public class IndexModel(ApplicationDbContext db) : PageModel
         if (TagId.HasValue)
             query = query.Where(s => s.Tags.Any(t => t.Id == TagId.Value));
 
-        // Aplicar ordenação com base no parâmetro
-        Servicos = await ApplyOrdering(query).ToListAsync();
+        return query;
     }
 
     private IOrderedQueryable<ServicoDigital> ApplyOrdering(IQueryable<ServicoDigital> query)
