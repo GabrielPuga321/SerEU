@@ -50,12 +50,6 @@ public class DetailsModel(ApplicationDbContext db) : PageModel
         UtilizadorAtualId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (UtilizadorAtualId == null) return Challenge();
 
-        // As propriedades de navegação não vêm do formulário; o EF preenche-as a
-        // partir das chaves estrangeiras. Sem isto, o Nullable=enable trata-as como
-        // [Required] e invalida o ModelState, impedindo a submissão.
-        ModelState.Remove("NovaAvaliacao.ServicoDigital");
-        ModelState.Remove("NovaAvaliacao.Utilizador");
-
         // O serviço tem de existir e estar aprovado para poder ser avaliado
         var servicoValido = await db.ServicosDigitais
             .AnyAsync(s => s.Id == NovaAvaliacao.ServicoDigitalId && s.Aprovado);
