@@ -83,6 +83,61 @@ a:focus-visible {
 }
 
 /* -------------------------------------------------------------------
+   Links — sublinhado elegante e transição suave (em vez do azul cru)
+   ------------------------------------------------------------------- */
+a {
+    text-decoration: none;
+    text-underline-offset: 0.18em;
+    text-decoration-thickness: 1.5px;
+    text-decoration-color: rgba(27, 77, 214, 0.35);
+    transition: color var(--eu-transition), text-decoration-color var(--eu-transition);
+}
+
+/* Apenas links de texto "normais" recebem sublinhado no hover. Botões,
+   itens de navegação, badges e cartões clicáveis mantêm o seu próprio estilo. */
+a:not(.btn):not(.nav-link):not(.navbar-brand):not(.dropdown-item):not(.list-group-item):not(.page-link):not(.badge):not(.link-externo):hover {
+    color: var(--eu-primary-dark);
+    text-decoration: underline;
+    text-decoration-color: var(--eu-primary-light);
+}
+
+/* Links que mostram um URL/endereço externo — apresentados como "pílula"
+   discreta com ícone, em vez do antigo texto azul sublinhado. */
+.link-externo {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    max-width: 100%;
+    padding: 0.2rem 0.7rem;
+    border-radius: 999px;
+    background: rgba(27, 77, 214, 0.08);
+    color: var(--eu-primary);
+    font-weight: 500;
+    line-height: 1.4;
+    text-decoration: none;
+    vertical-align: middle;
+    transition: background-color var(--eu-transition), color var(--eu-transition), box-shadow var(--eu-transition);
+}
+
+.link-externo .link-externo-texto {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.link-externo i {
+    flex-shrink: 0;
+    font-size: 0.9em;
+    opacity: 0.85;
+}
+
+.link-externo:hover {
+    background: rgba(27, 77, 214, 0.16);
+    color: var(--eu-primary-dark);
+    box-shadow: var(--eu-shadow-sm);
+}
+
+/* -------------------------------------------------------------------
    Navbar
    ------------------------------------------------------------------- */
 .navbar.bg-primary {

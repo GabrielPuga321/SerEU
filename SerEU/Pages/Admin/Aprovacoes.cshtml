@@ -30,7 +30,7 @@ else
                     <div class="card-body">
                         <p class="text-muted small">@servico.Descricao</p>
                         <ul class="list-unstyled small">
-                            <li><i class="bi bi-link me-1"></i><a href="@servico.Url" target="_blank">@servico.Url</a></li>
+                            <li><a href="@servico.Url" target="_blank" rel="noopener" class="link-externo"><i class="bi bi-box-arrow-up-right"></i><span class="link-externo-texto">@servico.Url</span></a></li>
                             @if (!string.IsNullOrEmpty(servico.Pais))
                             {
                                 <li><i class="bi bi-geo-alt me-1"></i>@servico.Pais</li>

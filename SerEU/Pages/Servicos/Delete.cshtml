@@ -24,7 +24,7 @@
                         <dt class="col-sm-4">Categoria</dt>
                         <dd class="col-sm-8">@Model.Servico.Categoria?.Nome</dd>
                         <dt class="col-sm-4">URL</dt>
-                        <dd class="col-sm-8"><a href="@Model.Servico.Url" target="_blank">@Model.Servico.Url</a></dd>
+                        <dd class="col-sm-8"><a href="@Model.Servico.Url" target="_blank" rel="noopener" class="link-externo"><i class="bi bi-box-arrow-up-right"></i><span class="link-externo-texto">@Model.Servico.Url</span></a></dd>
                         <dt class="col-sm-4">Avaliações</dt>
                         <dd class="col-sm-8">@Model.Servico.Avaliacoes.Count avaliação(ões) serão eliminadas</dd>
                     </dl>
