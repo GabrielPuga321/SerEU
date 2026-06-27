@@ -21,6 +21,7 @@ public class AprovacoesModel(ApplicationDbContext db, IHubContext<NotificacoesHu
             .Where(s => !s.Aprovado)
             .Include(s => s.Categoria)
             .Include(s => s.Tags)
+            .AsSplitQuery()
             .OrderBy(s => s.DataSubmissao)
             .ToListAsync();
 

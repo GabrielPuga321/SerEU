@@ -39,6 +39,7 @@ public class IndexModel(ApplicationDbContext db) : PageModel
             .Include(s => s.Categoria)
             .Include(s => s.Tags)
             .Include(s => s.Avaliacoes)
+            .AsSplitQuery()
             .AsQueryable();
 
         if (!User.IsInRole("Admin"))
