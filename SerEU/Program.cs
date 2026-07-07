@@ -60,6 +60,24 @@ builder.Services.AddTransient<IEmailSender, MailKitEmailSender>();
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 
+// Swagger / OpenAPI — documentação e teste interativo da API REST
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new Microsoft.OpenApi.OpenApiInfo
+    {
+        Title = "SerEU API",
+        Version = "v1",
+        Description = "API REST da Lista Europeia de Serviços Digitais"
+    });
+
+    // Inclui os comentários /// dos controllers na documentação
+    var xmlFile = $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+    if (File.Exists(xmlPath))
+        options.IncludeXmlComments(xmlPath);
+});
+
 // Token antifalsificação (CSRF) enviado também via cabeçalho para chamadas à API
 builder.Services.AddAntiforgery(options => options.HeaderName = "X-CSRF-TOKEN");
 
@@ -111,6 +129,14 @@ using (var scope = app.Services.CreateScope())
 if (app.Environment.IsDevelopment())
 {
     app.UseMigrationsEndPoint();
+
+    // Swagger disponível apenas em desenvolvimento (não expor a API em produção)
+    app.UseSwagger();
+    app.UseSwaggerUI(options =>
+    {
+        options.SwaggerEndpoint("/swagger/v1/swagger.json", "SerEU API v1");
+        options.DocumentTitle = "SerEU API — Swagger";
+    });
 }
 else
 {

@@ -7,6 +7,10 @@
         <UserSecretsId>aspnet-SerEU-52115695-e88b-4421-8db0-fd5604ed90d9</UserSecretsId>
         <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
         <GenerateScopedCssFiles>true</GenerateScopedCssFiles>
+        <!-- Gera o ficheiro XML com os comentários /// para o Swagger mostrar a documentação -->
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <!-- Não avisar sobre membros públicos sem comentário XML -->
+        <NoWarn>$(NoWarn);1591</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
@@ -20,6 +24,7 @@
              o EF Core 10 traz transitivamente a versão 2.1.11, vulnerável. O bundle 3.0.3
              arrasta o core/provider e a lib nativa já corrigida (SQLite 3.50.x). -->
         <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="3.0.3" />
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="10.2.3" />
     </ItemGroup>
 
     <ItemGroup>
